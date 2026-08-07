@@ -75,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Weton Jawa — Temukan Hari & Pasaran</title>
+    <title>Makna Wetonku — Temukan Hari & Pasaran</title>
 
     <link rel="stylesheet" href="assets/css/style.css">
 
@@ -88,8 +88,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <section class="hero">
         <div class="hero-copy">
             <p class="eyebrow">Warisan kalender Jawa</p>
-            <h1>Kenali <em>wetonmu,</em> pahami ceritanya.</h1>
-            <p class="intro">Temukan perpaduan hari dan pasaran Jawa dari tanggal lahirmu dalam hitungan detik.</p>
+            <h1>Temukan <em>makna wetonmu.</em></h1>
+            <p class="intro">Kenali perpaduan hari dan pasaran Jawa yang menyertai perjalanan hidupmu.</p>
             <p class="heritage-note">Sebuah cara sederhana untuk terhubung dengan tradisi.</p>
         </div>
         <section class="calculator-card" aria-labelledby="form-title">
