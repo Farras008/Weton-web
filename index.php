@@ -94,7 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </div>
         <section class="calculator-card" aria-labelledby="form-title">
             <div class="card-heading"><h2 id="form-title">Hitung weton</h2><p>Masukkan tanggal lahir Anda di bawah ini.</p></div>
-            <form method="POST">
+            <form method="POST" action="#hasil">
                 <label for="tanggal">Tanggal lahir</label>
                 <div class="tanggal-group">
 
@@ -150,13 +150,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <?php if ($error !== ""): ?>
 
-        <div class="error">
+        <div class="error" id="hasil" tabindex="-1">
             <?= htmlspecialchars($error) ?>
         </div>
 
     <?php elseif ($hari !== ""): ?>
 
-        <div class="hasil" aria-live="polite">
+        <div class="hasil" id="hasil" aria-live="polite" tabindex="-1">
             <p class="result-title"><span aria-hidden="true">✓</span> Hasil perhitungan Anda</p>
             <div class="result-grid">
                 <div class="result-item"><small>Hari</small><strong><?= htmlspecialchars($hari) ?></strong></div>
