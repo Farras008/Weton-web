@@ -4,6 +4,7 @@ require_once __DIR__ . "/lib/Hari.php";
 require_once __DIR__ . "/lib/Pasaran.php";
 require_once __DIR__ . "/lib/NeptuCalculator.php";
 require_once __DIR__ . "/lib/ArahKejayaanData.php";
+require_once __DIR__ . "/lib/WatakData.php";
 
 $hari = "";
 $pasaran = "";
@@ -16,6 +17,8 @@ $bergantiHari = false;
 $tanggalWetonTampil = "";
 $neptu = null;
 $arahKejayaan = null;
+$watakHari = null;
+$watakPasaran = null;
 $stylesheetVersion = filemtime(__DIR__ . "/assets/css/style.css");
 
 $bulanList = [
@@ -66,6 +69,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $pasaran = Pasaran::get($tanggalPerhitungan);
             $neptu = hitungNeptu($hari, $pasaran);
             $arahKejayaan = ArahKejayaanData::untukNeptu($neptu["totalNeptu"]);
+            $watakHari = WatakData::untukHari($hari);
+            $watakPasaran = WatakData::untukPasaran($pasaran);
             $tanggalWetonTampil = $tanggalWeton->format("j") . " " . $bulanList[(int) $tanggalWeton->format("n")] . " " . $tanggalWeton->format("Y");
         }
     }
@@ -187,7 +192,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 </section>
 
                 <section class="kejayaan-card" aria-labelledby="kejayaan-title">
-                    <p class="card-kicker">Tahap awal</p>
                     <h3 id="kejayaan-title">Arah kejayaan</h3>
                     <p class="kejayaan-copy">Berdasarkan total neptu <?= $neptu["totalNeptu"] ?>, arah mata angin yang digunakan adalah:</p>
                     <p class="arah-value"><?= htmlspecialchars($arahKejayaan["display"]) ?></p>
@@ -196,6 +200,35 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     </div>
                 </section>
             </div>
+
+            <section class="watak-section" aria-labelledby="watak-title">
+                <div class="watak-intro">
+                    <p class="eyebrow">Primbon Jawa</p>
+                    <h3 id="watak-title">Watak wetonmu</h3>
+                    <p>Menilik watak dari hari dan pasaran kelahiran menurut Primbon Jawa.</p>
+                </div>
+                <div class="watak-grid">
+                    <article class="watak-card">
+                        <p class="watak-label">Watak hari</p>
+                        <h4><?= htmlspecialchars($watakHari["nama"]) ?></h4>
+                        <blockquote><?= htmlspecialchars($watakHari["sumber"]) ?></blockquote>
+                        <p class="makna-label">Makna</p>
+                        <p class="makna-copy"><?= htmlspecialchars($watakHari["makna"]) ?></p>
+                    </article>
+                    <article class="watak-card">
+                        <p class="watak-label">Watak pasaran</p>
+                        <h4><?= htmlspecialchars($watakPasaran["nama"]) ?></h4>
+                        <blockquote><?= htmlspecialchars($watakPasaran["sumber"]) ?></blockquote>
+                        <p class="makna-label">Makna</p>
+                        <p class="makna-copy"><?= htmlspecialchars($watakPasaran["makna"]) ?></p>
+                    </article>
+                </div>
+                <footer class="watak-source">
+                    <p>Sumber: Primbon Jawa — No. 109 Watak Hari dan No. 110 Watak Pekan/Pasaran.</p>
+                    <p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan dalam sumber Primbon Jawa.</p>
+                    <p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p>
+                </footer>
+            </section>
         </section>
     <?php endif; ?>
 </main>

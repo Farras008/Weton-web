@@ -2,6 +2,7 @@
 
 require_once __DIR__ . "/../lib/NeptuCalculator.php";
 require_once __DIR__ . "/../lib/ArahKejayaanData.php";
+require_once __DIR__ . "/../lib/WatakData.php";
 
 function expect(bool $condition, string $message): void
 {
@@ -21,6 +22,25 @@ expect(hitungNeptu("Ahad", "Kliwon")["totalNeptu"] === 13, "Ahad harus dinormali
 expect(hitungNeptu("Sabtu", "Pahing")["totalNeptu"] === 18, "Sabtu Pahing harus bernilai 18");
 expect(ArahKejayaanData::untukNeptu(13)["display"] === "Utara atau Timur", "Neptu 13 harus memakai data arah yang sesuai");
 expect(ArahKejayaanData::untukNeptu(15)["arah"] === ["Barat"], "Neptu 15 harus memakai arah Barat");
+expect(WatakData::untukHari("Rabu")["nama"] === "Rabu", "Watak hari Rabu harus tersedia");
+expect(WatakData::untukPasaran("Pon")["nama"] === "Pon", "Watak pasaran Pon harus tersedia");
+expect(WatakData::untukHari("Senin")["nama"] === "Senin" && WatakData::untukPasaran("Pahing")["nama"] === "Pahing", "Watak Senin Pahing harus tersedia");
+expect(WatakData::untukHari("Sabtu")["nama"] === "Sabtu" && WatakData::untukPasaran("Wage")["nama"] === "Wage", "Watak Sabtu Wage harus tersedia");
+expect(WatakData::untukHari("Minggu")["nama"] === "Ahad / Minggu", "Minggu harus dipetakan ke data Ahad");
+expect(WatakData::untukPasaran("Kliwon")["sumber"] !== "", "Watak Ahad Kliwon harus memiliki sumber lengkap");
+
+$kombinasiWatak = 0;
+foreach (NeptuData::HARI as $hari => $_) {
+    $dataHari = WatakData::untukHari($hari);
+    expect($dataHari["sumber"] !== "" && $dataHari["makna"] !== "", "Watak $hari harus lengkap");
+
+    foreach (NeptuData::PASARAN as $pasaran => $_) {
+        $dataPasaran = WatakData::untukPasaran($pasaran);
+        expect($dataPasaran["sumber"] !== "" && $dataPasaran["makna"] !== "", "Watak $pasaran harus lengkap");
+        $kombinasiWatak++;
+    }
+}
+expect($kombinasiWatak === 35, "Semua 35 kombinasi harus memiliki data watak hari dan pasaran");
 
 $jumlahKombinasi = 0;
 foreach (NeptuData::HARI as $hari => $neptuHari) {
