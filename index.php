@@ -6,6 +6,7 @@ require_once __DIR__ . "/lib/NeptuCalculator.php";
 require_once __DIR__ . "/lib/ArahKejayaanData.php";
 require_once __DIR__ . "/lib/WatakData.php";
 require_once __DIR__ . "/lib/PerbintanganData.php";
+require_once __DIR__ . "/lib/WatakKelahiranData.php";
 
 $hari = "";
 $pasaran = "";
@@ -21,6 +22,7 @@ $arahKejayaan = null;
 $watakHari = null;
 $watakPasaran = null;
 $perbintangan = null;
+$watakKelahiran = null;
 $stylesheetVersion = filemtime(__DIR__ . "/assets/css/style.css");
 
 $bulanList = [
@@ -74,6 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $watakHari = WatakData::untukHari($hari);
             $watakPasaran = WatakData::untukPasaran($pasaran);
             $perbintangan = PerbintanganData::untukNeptu($neptu["totalNeptu"]);
+            $watakKelahiran = WatakKelahiranData::untukWeton($hari, $pasaran);
             $tanggalWetonTampil = $tanggalWeton->format("j") . " " . $bulanList[(int) $tanggalWeton->format("n")] . " " . $tanggalWeton->format("Y");
         }
     }
@@ -231,6 +234,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan dalam sumber Primbon Jawa.</p>
                     <p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p>
                 </footer>
+            </section>
+
+            <section class="watak-kelahiran-section" aria-labelledby="watak-kelahiran-title">
+                <div class="watak-kelahiran-intro">
+                    <p class="eyebrow">Primbon Jawa No. 100</p>
+                    <h3 id="watak-kelahiran-title">Watak kelahiran</h3>
+                    <p>Petikan watak menurut hari dan pasaran kelahiran dalam Primbon Jawa.</p>
+                </div>
+                <article class="watak-kelahiran-card">
+                    <div class="weton-name"><p>Weton kelahiran</p><h4><?= htmlspecialchars($neptu["weton"]) ?></h4></div>
+                    <div class="watak-kelahiran-body">
+                        <p class="petikan-label">Petikan Primbon</p>
+                        <blockquote><?= htmlspecialchars($watakKelahiran["sumber"]) ?></blockquote>
+                        <p class="makna-label">Makna</p>
+                        <p class="watak-kelahiran-makna"><?= htmlspecialchars($watakKelahiran["makna"]) ?></p>
+                    </div>
+                </article>
+                <footer class="watak-kelahiran-source"><p>Sumber: Primbon Jawa — No. 100, Watak bayi menurut hari dan pekan kelahiran.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan dalam sumber Primbon Jawa.</p><p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p></footer>
             </section>
 
             <section class="perbintangan-section" aria-labelledby="perbintangan-title">
