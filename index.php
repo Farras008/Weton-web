@@ -16,6 +16,7 @@ $bergantiHari = false;
 $tanggalWetonTampil = "";
 $neptu = null;
 $arahKejayaan = null;
+$stylesheetVersion = filemtime(__DIR__ . "/assets/css/style.css");
 
 $bulanList = [
     1 => "Januari",
@@ -83,7 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <title>Makna Wetonku — Temukan Hari & Pasaran</title>
 
-    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css?v=<?= urlencode((string) $stylesheetVersion) ?>">
 
 </head>
 
