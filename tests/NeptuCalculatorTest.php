@@ -3,6 +3,7 @@
 require_once __DIR__ . "/../lib/NeptuCalculator.php";
 require_once __DIR__ . "/../lib/ArahKejayaanData.php";
 require_once __DIR__ . "/../lib/WatakData.php";
+require_once __DIR__ . "/../lib/PerbintanganData.php";
 
 function expect(bool $condition, string $message): void
 {
@@ -41,6 +42,13 @@ foreach (NeptuData::HARI as $hari => $_) {
     }
 }
 expect($kombinasiWatak === 35, "Semua 35 kombinasi harus memiliki data watak hari dan pasaran");
+
+$bintangPerNeptu = [7 => "Mijan", 8 => "Arab", 9 => "Kukus", 10 => "Jadi", 11 => "Dalu", 12 => "Kuda", 13 => "Asma", 14 => "Sur", 15 => "Jun", 16 => "Surtan", 17 => "Sada", 18 => "Sumbul"];
+foreach ($bintangPerNeptu as $neptu => $bintang) {
+    $dataBintang = PerbintanganData::untukNeptu($neptu);
+    expect($dataBintang["bintang"] === $bintang, "Neptu $neptu harus memakai Bintang $bintang");
+    expect($dataBintang["sumber"] !== "" && $dataBintang["makna"] !== "" && $dataBintang["penyakit"] !== "", "Data Bintang $bintang harus lengkap");
+}
 
 $jumlahKombinasi = 0;
 foreach (NeptuData::HARI as $hari => $neptuHari) {

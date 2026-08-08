@@ -5,6 +5,7 @@ require_once __DIR__ . "/lib/Pasaran.php";
 require_once __DIR__ . "/lib/NeptuCalculator.php";
 require_once __DIR__ . "/lib/ArahKejayaanData.php";
 require_once __DIR__ . "/lib/WatakData.php";
+require_once __DIR__ . "/lib/PerbintanganData.php";
 
 $hari = "";
 $pasaran = "";
@@ -19,6 +20,7 @@ $neptu = null;
 $arahKejayaan = null;
 $watakHari = null;
 $watakPasaran = null;
+$perbintangan = null;
 $stylesheetVersion = filemtime(__DIR__ . "/assets/css/style.css");
 
 $bulanList = [
@@ -71,6 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $arahKejayaan = ArahKejayaanData::untukNeptu($neptu["totalNeptu"]);
             $watakHari = WatakData::untukHari($hari);
             $watakPasaran = WatakData::untukPasaran($pasaran);
+            $perbintangan = PerbintanganData::untukNeptu($neptu["totalNeptu"]);
             $tanggalWetonTampil = $tanggalWeton->format("j") . " " . $bulanList[(int) $tanggalWeton->format("n")] . " " . $tanggalWeton->format("Y");
         }
     }
@@ -228,6 +231,33 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan dalam sumber Primbon Jawa.</p>
                     <p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p>
                 </footer>
+            </section>
+
+            <section class="perbintangan-section" aria-labelledby="perbintangan-title">
+                <div class="perbintangan-intro">
+                    <p class="eyebrow">Primbon Jawa No. 117</p>
+                    <h3 id="perbintangan-title">Perbintangan</h3>
+                    <p>Jejak bintang dalam perhitungan Primbon Jawa.</p>
+                </div>
+                <div class="perbintangan-panel">
+                    <div class="bintang-utama"><p>Bintangmu</p><h4><span aria-hidden="true">✦</span> <?= htmlspecialchars($perbintangan["bintang"]) ?> <span aria-hidden="true">✦</span></h4><small>Neptu <?= $neptu["totalNeptu"] ?></small></div>
+                    <div class="bintang-content">
+                        <p class="petikan-label">Petikan Primbon</p>
+                        <blockquote><?= htmlspecialchars($perbintangan["sumber"]) ?></blockquote>
+                        <p class="makna-label">Makna</p>
+                        <p class="bintang-makna"><?= htmlspecialchars($perbintangan["makna"]) ?></p>
+                    </div>
+                    <dl class="bintang-facts">
+                        <div><dt>Bala bantuan</dt><dd>Bintang <?= htmlspecialchars($perbintangan["balaBantuan"]) ?></dd></div>
+                        <div><dt>Musuh</dt><dd>Bintang <?= htmlspecialchars($perbintangan["musuh"]) ?></dd></div>
+                        <div><dt>Kesaktian</dt><dd><?= htmlspecialchars($perbintangan["kesaktian"]) ?></dd></div>
+                        <div><dt>Syarat</dt><dd><?= htmlspecialchars($perbintangan["syarat"]) ?></dd></div>
+                        <div><dt>Kejayaan</dt><dd><?= htmlspecialchars($perbintangan["kejayaan"]) ?></dd></div>
+                        <div><dt>Kemalangan</dt><dd><?= htmlspecialchars($perbintangan["kemalangan"]) ?><small>Menurut keterangan sumber Primbon Jawa.</small></dd></div>
+                        <div><dt>Penyakit</dt><dd><?= htmlspecialchars($perbintangan["penyakit"]) ?><small>Menurut keterangan sumber Primbon Jawa; bukan penilaian medis.</small></dd></div>
+                    </dl>
+                </div>
+                <footer class="perbintangan-source"><p>Sumber: Primbon Jawa — No. 117 Perbintangan.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan sumber Primbon Jawa.</p><p>Perbintangan merupakan bagian dari tradisi Primbon Jawa dan tidak dimaksudkan sebagai kepastian ilmiah mengenai masa depan, kesehatan, atau kehidupan seseorang.</p></footer>
             </section>
         </section>
     <?php endif; ?>
