@@ -7,6 +7,7 @@ require_once __DIR__ . "/lib/ArahKejayaanData.php";
 require_once __DIR__ . "/lib/WatakData.php";
 require_once __DIR__ . "/lib/PerbintanganData.php";
 require_once __DIR__ . "/lib/WatakKelahiranData.php";
+require_once __DIR__ . "/lib/VisitorCounter.php";
 
 $hari = "";
 $pasaran = "";
@@ -24,6 +25,7 @@ $watakPasaran = null;
 $perbintangan = null;
 $watakKelahiran = null;
 $stylesheetVersion = filemtime(__DIR__ . "/assets/css/style.css");
+$visitorCount = 0;
 
 $bulanList = [
     1 => "Januari",
@@ -40,7 +42,11 @@ $bulanList = [
     12 => "Desember"
 ];
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+$visitorCount = VisitorCounter::getCount();
+
+if ($_SERVER["REQUEST_METHOD"] === "GET") {
+    $visitorCount = VisitorCounter::increment();
+} elseif ($_SERVER["REQUEST_METHOD"] === "POST") {
     $tgl = trim($_POST["tanggal"] ?? "");
     $bln = trim($_POST["bulan"] ?? "");
     $thn = trim($_POST["tahun"] ?? "");
@@ -109,6 +115,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <h1>Temukan <em>makna wetonmu.</em></h1>
             <p class="intro">Kenali perpaduan hari dan pasaran Jawa yang menyertai perjalanan hidupmu.</p>
             <p class="heritage-note">Sebuah cara sederhana untuk terhubung dengan tradisi.</p>
+            <p class="visitor-count">Sudah dicoba oleh <?= htmlspecialchars(number_format($visitorCount, 0, ",", ".")) ?> orang</p>
         </div>
         <section class="calculator-card" aria-labelledby="form-title">
             <div class="card-heading"><h2 id="form-title">Hitung weton</h2><p>Masukkan tanggal lahir Anda di bawah ini.</p></div>
