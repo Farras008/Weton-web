@@ -2,6 +2,8 @@
 
 require_once __DIR__ . "/lib/Hari.php";
 require_once __DIR__ . "/lib/Pasaran.php";
+require_once __DIR__ . "/lib/NeptuCalculator.php";
+require_once __DIR__ . "/lib/ArahKejayaanData.php";
 
 $hari = "";
 $pasaran = "";
@@ -12,6 +14,8 @@ $thn = "";
 $waktuLahir = "";
 $bergantiHari = false;
 $tanggalWetonTampil = "";
+$neptu = null;
+$arahKejayaan = null;
 
 $bulanList = [
     1 => "Januari",
@@ -59,6 +63,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $tanggalPerhitungan = $tanggalWeton->format("Y-m-d");
             $hari = Hari::get($tanggalPerhitungan);
             $pasaran = Pasaran::get($tanggalPerhitungan);
+            $neptu = hitungNeptu($hari, $pasaran);
+            $arahKejayaan = ArahKejayaanData::untukNeptu($neptu["totalNeptu"]);
             $tanggalWetonTampil = $tanggalWeton->format("j") . " " . $bulanList[(int) $tanggalWeton->format("n")] . " " . $tanggalWeton->format("Y");
         }
     }
@@ -148,35 +154,49 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             Lihat hasil weton <span class="button-arrow" aria-hidden="true">→</span>
         </button>
 
-    <?php if ($error !== ""): ?>
-
-        <div class="error" id="hasil" tabindex="-1">
-            <?= htmlspecialchars($error) ?>
-        </div>
-
-    <?php elseif ($hari !== ""): ?>
-
-        <div class="hasil" id="hasil" aria-live="polite" tabindex="-1">
-            <p class="result-title"><span aria-hidden="true">✓</span> Hasil perhitungan Anda</p>
-            <div class="result-grid">
-                <div class="result-item"><small>Hari</small><strong><?= htmlspecialchars($hari) ?></strong></div>
-                <div class="result-item"><small>Pasaran</small><strong><?= htmlspecialchars($pasaran) ?></strong></div>
-            </div>
-            <p class="result-note">
-                <span aria-hidden="true">✦</span>
-                <?php if ($bergantiHari): ?>
-                    Karena lahir malam, weton dihitung mengikuti hari berikutnya: <strong><?= htmlspecialchars($tanggalWetonTampil) ?></strong>.
-                <?php else: ?>
-                    Karena lahir sebelum malam, weton dihitung pada tanggal lahir: <strong><?= htmlspecialchars($tanggalWetonTampil) ?></strong>.
-                <?php endif; ?>
-            </p>
-
-        </div>
-
-    <?php endif; ?>
             </form>
         </section>
     </section>
+
+    <?php if ($error !== ""): ?>
+        <div class="error page-error" id="hasil" tabindex="-1"><?= htmlspecialchars($error) ?></div>
+    <?php elseif ($neptu !== null): ?>
+        <section class="weton-detail" id="hasil" aria-live="polite" tabindex="-1">
+            <div class="detail-intro">
+                <p class="eyebrow">Lembaran wetonmu</p>
+                <h2><?= htmlspecialchars($neptu["weton"]) ?></h2>
+                <p>
+                    <?php if ($bergantiHari): ?>
+                        Perhitungan mengikuti hari berikutnya, yaitu <?= htmlspecialchars($tanggalWetonTampil) ?>.
+                    <?php else: ?>
+                        Perhitungan menggunakan tanggal lahirmu, yaitu <?= htmlspecialchars($tanggalWetonTampil) ?>.
+                    <?php endif; ?>
+                </p>
+            </div>
+
+            <div class="detail-grid">
+                <section class="neptu-section" aria-labelledby="neptu-title">
+                    <div class="neptu-heading"><span aria-hidden="true">✦</span><div><h3 id="neptu-title">Perhitungan neptu</h3><p>Nilai dasar hari dan pasaran wetonmu.</p></div></div>
+                    <div class="neptu-math" aria-label="<?= htmlspecialchars($neptu["neptuHari"] . " ditambah " . $neptu["neptuPasaran"] . " sama dengan " . $neptu["totalNeptu"]) ?>">
+                        <div><small><?= htmlspecialchars($neptu["hari"]) ?></small><strong><?= $neptu["neptuHari"] ?></strong></div><span aria-hidden="true">+</span>
+                        <div><small><?= htmlspecialchars($neptu["pasaran"]) ?></small><strong><?= $neptu["neptuPasaran"] ?></strong></div><span aria-hidden="true">=</span>
+                        <div class="neptu-total"><small>Total neptu</small><strong><?= $neptu["totalNeptu"] ?></strong></div>
+                    </div>
+                    <p class="neptu-caption"><strong><?= htmlspecialchars($neptu["weton"]) ?></strong> memiliki total neptu <strong><?= $neptu["totalNeptu"] ?></strong>.</p>
+                </section>
+
+                <section class="kejayaan-card" aria-labelledby="kejayaan-title">
+                    <p class="card-kicker">Tahap awal</p>
+                    <h3 id="kejayaan-title">Arah kejayaan</h3>
+                    <p class="kejayaan-copy">Berdasarkan total neptu <?= $neptu["totalNeptu"] ?>, arah mata angin yang digunakan adalah:</p>
+                    <p class="arah-value"><?= htmlspecialchars($arahKejayaan["display"]) ?></p>
+                    <div class="arah-chips">
+                        <?php foreach ($arahKejayaan["arah"] as $arah): ?><span><?= htmlspecialchars($arah) ?></span><?php endforeach; ?>
+                    </div>
+                </section>
+            </div>
+        </section>
+    <?php endif; ?>
 </main>
 
 </body>
