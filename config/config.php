@@ -22,7 +22,7 @@ function app_config(string $key, ?string $default = null): ?string
         'DB_USER' => ['db', 'user'], 'DB_PASSWORD' => ['db', 'password'],
         'DUITKU_ENV' => ['duitku', 'environment'], 'DUITKU_MERCHANT_CODE' => ['duitku', 'merchant_code'], 'DUITKU_API_KEY' => ['duitku', 'api_key'],
         'MAIL_HOST' => ['mail', 'host'], 'MAIL_PORT' => ['mail', 'port'], 'MAIL_USERNAME' => ['mail', 'username'], 'MAIL_PASSWORD' => ['mail', 'password'],
-        'MAIL_ENCRYPTION' => ['mail', 'encryption'], 'MAIL_FROM_ADDRESS' => ['mail', 'from_address'], 'MAIL_FROM_NAME' => ['mail', 'from_name'],
+        'MAIL_ENCRYPTION' => ['mail', 'encryption'], 'MAIL_FROM_ADDRESS' => ['mail', 'from_address'], 'MAIL_FROM_NAME' => ['mail', 'from_name'], 'MAIL_TEST_TOKEN' => ['mail', 'test_token'],
         'APP_URL' => ['app', 'url'],
     ];
     $path = $paths[$key] ?? null;

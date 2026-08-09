@@ -8,7 +8,7 @@ return [
         'port' => 3306,
         'name' => 'u468044357_weton_db',
         'user' => 'u468044357_weton',
-        'password' => '@Sendiriku230602',
+        'password' => 'YOUR_DATABASE_PASSWORD',
     ],
     'duitku' => [
         'environment' => 'sandbox',
@@ -23,6 +23,8 @@ return [
         'encryption' => 'tls',
         'from_address' => 'YOUR_EMAIL',
         'from_name' => 'Weton Online',
+        // Buat token acak panjang khusus untuk membuka endpoint test email.
+        'test_token' => 'YOUR_RANDOM_TEST_EMAIL_TOKEN',
     ],
     'app' => [
         'url' => 'https://weton.online',
