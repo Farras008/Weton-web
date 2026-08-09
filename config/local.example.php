@@ -8,7 +8,7 @@ return [
         'port' => 3306,
         'name' => 'u468044357_weton_db',
         'user' => 'u468044357_weton',
-        'password' => 'YOUR_DATABASE_PASSWORD',
+        'password' => '@Sendiriku230602',
     ],
     'duitku' => [
         'environment' => 'sandbox',
