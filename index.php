@@ -141,7 +141,6 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 
     <title>Weton Online</title>
     <link rel="icon" type="image/png" href="/assets/favicon.png">
-
     <link rel="stylesheet" href="assets/css/style.css?v=<?= urlencode((string) $stylesheetVersion) ?>">
 
 </head>
