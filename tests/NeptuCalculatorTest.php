@@ -5,6 +5,9 @@ require_once __DIR__ . "/../lib/ArahKejayaanData.php";
 require_once __DIR__ . "/../lib/WatakData.php";
 require_once __DIR__ . "/../lib/PerbintanganData.php";
 require_once __DIR__ . "/../lib/WatakKelahiranData.php";
+require_once __DIR__ . "/../lib/WatakBayi.php";
+require_once __DIR__ . "/../lib/WatakBayiTanggal.php";
+require_once __DIR__ . "/../lib/MarriageCalculator.php";
 
 function expect(bool $condition, string $message): void
 {
@@ -58,6 +61,16 @@ foreach ($watakKelahiranTest as $weton) {
     expect($dataWatakKelahiran["sumber"] !== "" && $dataWatakKelahiran["makna"] !== "", "Data watak kelahiran $weton harus lengkap");
 }
 expect(count(WatakKelahiranData::WATAK_KELAHIRAN) === 35, "Database watak kelahiran harus memuat 35 kombinasi");
+expect(count(WatakBayi::WATAK_BAYI) === 12, "Database Watak Bayi No. 105 harus memuat 12 data");
+expect(count(WatakBayiTanggal::WATAK_BAYI_TANGGAL) === 30, "Database Watak Bayi tanggal No. 101 harus memuat 30 data");
+expect(WatakBayiTanggal::get(1)["sumber"] !== "", "Watak bayi tanggal 1 harus tersedia");
+expect(WatakBayiTanggal::get(23)["makna"] !== "", "Watak bayi tanggal 23 harus tersedia");
+expect(WatakBayiTanggal::get(30)["sumber"] !== "", "Watak bayi tanggal 30 harus tersedia");
+expect(WatakBayiTanggal::get(31) === null, "Tanggal 31 tidak boleh memakai fallback data lain");
+$jodohDana = MarriageCalculator::getMarriageResult(9, 8);
+expect($jodohDana["combinedNeptu"] === 17 && $jodohDana["result23"]["nama"] === "Dana" && $jodohDana["result23"]["status"] === "baik", "Ahad Wage dan Selasa Legi harus menghasilkan Dana yang baik");
+expect(Marriage22::calculate(28)["nama"] === "Lebu Katiup Angin", "Total 28 harus menghasilkan Lebu Katiup Angin pada No. 22");
+expect(count(MarriageCalculator::getPartnerRecommendations(13)["utama"]) + count(MarriageCalculator::getPartnerRecommendations(13)["alternatif"]) + count(MarriageCalculator::getPartnerRecommendations(13)["kurang-selaras"]) === 12, "Rekomendasi harus memuat neptu pasangan 7–18");
 
 $jumlahKombinasi = 0;
 foreach (NeptuData::HARI as $hari => $neptuHari) {

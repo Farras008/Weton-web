@@ -10,6 +10,8 @@ require_once __DIR__ . "/lib/WatakKelahiranData.php";
 require_once __DIR__ . "/lib/VisitorCounter.php";
 require_once __DIR__ . "/lib/PalSrigati.php";
 require_once __DIR__ . "/lib/WatakBayi.php";
+require_once __DIR__ . "/lib/WatakBayiTanggal.php";
+require_once __DIR__ . "/lib/MarriageCalculator.php";
 
 $hari = "";
 $pasaran = "";
@@ -33,6 +35,8 @@ $palValue = null;
 $palTimeline = [];
 $ageYears = null;
 $watakBayi = null;
+$watakBayiTanggal = null;
+$jodohRekomendasi = null;
 
 $bulanList = [
     1 => "Januari",
@@ -108,7 +112,9 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                 }
                     // Watak Bayi (No. 105)
                     if (isset(WatakBayi::WATAK_BAYI[$neptu["totalNeptu"]])) {
-                        $watakBayi = WatakBayi::get($neptu["totalNeptu"]);
+            $watakBayi = WatakBayi::get($neptu["totalNeptu"]);
+            $watakBayiTanggal = WatakBayiTanggal::get($tgl);
+            $jodohRekomendasi = MarriageCalculator::getPartnerRecommendations($neptu["totalNeptu"]);
                     } else {
                         $watakBayi = null;
                     }
@@ -133,7 +139,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Makna Wetonku — Temukan Hari & Pasaran</title>
+    <title>Weton Online</title>
 
     <link rel="stylesheet" href="assets/css/style.css?v=<?= urlencode((string) $stylesheetVersion) ?>">
 
@@ -146,7 +152,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
     <section class="hero">
         <div class="hero-copy">
             <p class="eyebrow">Warisan kalender Jawa</p>
-            <h1>Temukan <em>makna wetonmu.</em></h1>
+            <h1>Temukan <em>makna wetonmu</em></h1>
             <p class="intro">Kenali perpaduan hari dan pasaran Jawa yang menyertai perjalanan hidupmu.</p>
             <p class="heritage-note">Sebuah cara sederhana untuk terhubung dengan tradisi.</p>
             <p class="visitor-count">Sudah dicoba oleh <?= htmlspecialchars(number_format($visitorCount, 0, ",", ".")) ?> orang</p>
@@ -299,11 +305,11 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                 <div class="watak-bayi-intro">
                     <p class="eyebrow">Primbon Jawa No. 105</p>
                     <h3 id="watak-bayi-title">Watak Bayi</h3>
-                    <p>Watak menurut jumlah neptu kelahiran dalam Primbon Jawa.</p>
+                    <p>Melihat watak kelahiran dari jumlah neptu dan tanggal lahir menurut Primbon Jawa.</p>
                 </div>
 
                 <article class="watak-kelahiran-card">
-                    <div class="weton-name"><p>Watak Bayi</p><h4>NEPTU <?= htmlspecialchars($neptu["totalNeptu"]) ?></h4></div>
+                    <div class="weton-name"><p>Watak menurut neptu</p><h4>NEPTU <?= htmlspecialchars($neptu["totalNeptu"]) ?></h4></div>
                     <div class="watak-kelahiran-body">
                         <p class="petikan-label">Petikan Primbon</p>
                         <blockquote><?= $watakBayi !== null ? htmlspecialchars($watakBayi['sumber']) : '-' ?></blockquote>
@@ -312,7 +318,22 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                     </div>
                 </article>
 
-                <footer class="watak-bayi-source"><p>Sumber: Primbon Jawa — No. 105, Watak Bayi.</p><p>Bagian 'Makna' merupakan penjelasan dalam bahasa modern berdasarkan keterangan sumber Primbon Jawa.</p><p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p></footer>
+                <p class="watak-bayi-reading-label">Watak menurut tanggal lahir</p>
+                <?php if ($watakBayiTanggal !== null): ?>
+                    <article class="watak-kelahiran-card watak-tanggal-card">
+                        <div class="weton-name"><p>Primbon Jawa No. 101</p><h4>TANGGAL <?= htmlspecialchars((string) $tgl) ?></h4></div>
+                        <div class="watak-kelahiran-body">
+                            <p class="petikan-label">Petikan Primbon</p>
+                            <blockquote><?= htmlspecialchars($watakBayiTanggal["sumber"]) ?></blockquote>
+                            <p class="makna-label">Makna</p>
+                            <p class="watak-kelahiran-makna"><?= htmlspecialchars($watakBayiTanggal["makna"]) ?></p>
+                        </div>
+                    </article>
+                <?php else: ?>
+                    <div class="watak-bayi-unavailable">Data watak untuk tanggal <?= htmlspecialchars((string) $tgl) ?> belum tersedia dalam sumber yang digunakan.</div>
+                <?php endif; ?>
+
+                <footer class="watak-bayi-source"><p>Sumber: Primbon Jawa — No. 105, Watak Bayi.</p><p>Sumber: Primbon Jawa — No. 101, Watak bayi menurut tanggal kelahiran.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan sumber Primbon Jawa.</p><p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p></footer>
             </section>
 
             <section class="perbintangan-section" aria-labelledby="perbintangan-title">
@@ -389,6 +410,37 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                     <p>Pal Srigati merupakan perhitungan tradisional Primbon Jawa mengenai perubahan rejeki penghidupan dalam siklus enam tahunan berdasarkan jumlah neptu hari dan pekan kelahiran.</p>
                     <p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan kepastian mengenai kondisi rejeki, kehidupan, atau masa depan seseorang.</p>
                 </footer>
+            </section>
+
+            <section class="jodoh-section" aria-labelledby="jodoh-title">
+                <div class="jodoh-intro"><p class="eyebrow">Primbon Jawa No. 22 &amp; 23</p><h3 id="jodoh-title">Jodoh &amp; Pernikahan</h3><p>Melihat kemungkinan pasangan berdasarkan jumlah neptu kelahiran menurut perhitungan Primbon Jawa.</p></div>
+                <div class="jodoh-user-neptu"><span>Neptumu</span><strong><?= $neptu["totalNeptu"] ?></strong><p>Beberapa neptu pasangan berikut memberi hasil yang lebih selaras menurut sumber.</p></div>
+
+                <?php $jodohGroups = ["utama" => "Rekomendasi utama", "alternatif" => "Alternatif", "kurang-selaras" => "Kurang selaras"]; ?>
+                <?php foreach ($jodohGroups as $groupKey => $groupLabel): ?>
+                    <div class="jodoh-group jodoh-<?= $groupKey ?>"><h4><?= $groupLabel ?></h4><div class="jodoh-grid">
+                        <?php foreach ($jodohRekomendasi[$groupKey] as $jodoh): ?>
+                            <article class="jodoh-card">
+                                <p class="jodoh-neptu-label">Neptu pasangan</p><strong class="jodoh-neptu"><?= $jodoh["partnerNeptu"] ?></strong>
+                                <p class="jodoh-weton"><?= htmlspecialchars(implode(" · ", $jodoh["wetonPasangan"])) ?></p>
+                                <?php if (isset($jodoh["error"])): ?>
+                                    <p class="jodoh-error"><?= htmlspecialchars($jodoh["error"]) ?></p>
+                                <?php else: ?>
+                                    <div class="jodoh-result"><small>Total: <?= $neptu["totalNeptu"] ?> + <?= $jodoh["partnerNeptu"] ?> = <?= $jodoh["combinedNeptu"] ?></small><strong><?= htmlspecialchars($jodoh["result22"]["nama"]) ?></strong><p class="jodoh-arti">Arti: <?= htmlspecialchars($jodoh["result22"]["arti"]) ?></p><span class="jodoh-status <?= $jodoh["result23"]["status"] === "baik" ? "baik" : "kurang-baik" ?>"><?= htmlspecialchars($jodoh["result23"]["nama"]) ?> · <?= htmlspecialchars($jodoh["result23"]["status"]) ?></span></div>
+                                    <div class="jodoh-reading"><p class="jodoh-reading-title">Gambaran hubungan</p><p><?= htmlspecialchars($jodoh["result22"]["makna"]) ?></p></div>
+                                    <div class="jodoh-reading"><p class="jodoh-reading-title">Arah rumah tangga</p><p><?= htmlspecialchars($jodoh["result23"]["makna"]) ?></p></div>
+                                <?php endif; ?>
+                            </article>
+                        <?php endforeach; ?>
+                    </div></div>
+                <?php endforeach; ?>
+
+                <details class="jodoh-all"><summary>Lihat semua kemungkinan</summary><div class="jodoh-all-content">
+                    <?php foreach (["utama", "alternatif", "kurang-selaras"] as $groupKey): foreach ($jodohRekomendasi[$groupKey] as $jodoh): ?>
+                        <p><strong>Neptu <?= $jodoh["partnerNeptu"] ?></strong> — <?= htmlspecialchars(implode(", ", $jodoh["wetonPasangan"])) ?><?php if (!isset($jodoh["error"])): ?>; <?= htmlspecialchars($jodoh["result22"]["nama"]) ?> dan <?= htmlspecialchars($jodoh["result23"]["nama"]) ?>.<?php else: ?>; <?= htmlspecialchars($jodoh["error"]) ?><?php endif; ?></p>
+                    <?php endforeach; endforeach; ?>
+                </div></details>
+                <footer class="jodoh-source"><p>Sumber: Primbon Jawa — No. 22 dan No. 23 Perhitungan untuk suami istri (Pernikahan).</p><p>Perhitungan ini merupakan bagian dari tradisi Primbon Jawa dan digunakan sebagai bahan refleksi budaya. Hasil perhitungan bukan kepastian mengenai kecocokan, masa depan, atau keberlangsungan sebuah hubungan.</p></footer>
             </section>
         </section>
     <?php endif; ?>
