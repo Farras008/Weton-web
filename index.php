@@ -8,6 +8,8 @@ require_once __DIR__ . "/lib/WatakData.php";
 require_once __DIR__ . "/lib/PerbintanganData.php";
 require_once __DIR__ . "/lib/WatakKelahiranData.php";
 require_once __DIR__ . "/lib/VisitorCounter.php";
+require_once __DIR__ . "/lib/PalSrigati.php";
+require_once __DIR__ . "/lib/WatakBayi.php";
 
 $hari = "";
 $pasaran = "";
@@ -26,6 +28,11 @@ $perbintangan = null;
 $watakKelahiran = null;
 $stylesheetVersion = filemtime(__DIR__ . "/assets/css/style.css");
 $visitorCount = 0;
+$palPeriodKey = null;
+$palValue = null;
+$palTimeline = [];
+$ageYears = null;
+$watakBayi = null;
 
 $bulanList = [
     1 => "Januari",
@@ -84,6 +91,33 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
             $perbintangan = PerbintanganData::untukNeptu($neptu["totalNeptu"]);
             $watakKelahiran = WatakKelahiranData::untukWeton($hari, $pasaran);
             $tanggalWetonTampil = $tanggalWeton->format("j") . " " . $bulanList[(int) $tanggalWeton->format("n")] . " " . $tanggalWeton->format("Y");
+
+            // Pal Srigati: compute using original date of birth (not shifted by malam)
+                try {
+                $dob = new DateTimeImmutable($tanggal);
+                $ageInterval = $dob->diff(new DateTimeImmutable('now'));
+                $ageYears = $ageInterval->y;
+                $palPeriodKey = PalSrigati::getPeriodKeyForDateOfBirth($dob);
+                if (isset(PalSrigati::PAL_SRIGATI[$neptu["totalNeptu"]])) {
+                    $palValue = PalSrigati::getValue($neptu["totalNeptu"], $palPeriodKey);
+                    // limit timeline display to ages up to 60
+                    $palTimeline = PalSrigati::timelineForNeptu($neptu["totalNeptu"], 60);
+                } else {
+                    $palValue = null;
+                    $palTimeline = [];
+                }
+                    // Watak Bayi (No. 105)
+                    if (isset(WatakBayi::WATAK_BAYI[$neptu["totalNeptu"]])) {
+                        $watakBayi = WatakBayi::get($neptu["totalNeptu"]);
+                    } else {
+                        $watakBayi = null;
+                    }
+            } catch (Throwable $e) {
+                $palPeriodKey = null;
+                $palValue = null;
+                $palTimeline = [];
+                    $watakBayi = null;
+            }
         }
     }
 }
@@ -261,6 +295,26 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                 <footer class="watak-kelahiran-source"><p>Sumber: Primbon Jawa — No. 100, Watak bayi menurut hari dan pekan kelahiran.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan dalam sumber Primbon Jawa.</p><p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p></footer>
             </section>
 
+            <section class="watak-bayi-section" aria-labelledby="watak-bayi-title">
+                <div class="watak-bayi-intro">
+                    <p class="eyebrow">Primbon Jawa No. 105</p>
+                    <h3 id="watak-bayi-title">Watak Bayi</h3>
+                    <p>Watak menurut jumlah neptu kelahiran dalam Primbon Jawa.</p>
+                </div>
+
+                <article class="watak-kelahiran-card">
+                    <div class="weton-name"><p>Watak Bayi</p><h4>NEPTU <?= htmlspecialchars($neptu["totalNeptu"]) ?></h4></div>
+                    <div class="watak-kelahiran-body">
+                        <p class="petikan-label">Petikan Primbon</p>
+                        <blockquote><?= $watakBayi !== null ? htmlspecialchars($watakBayi['sumber']) : '-' ?></blockquote>
+                        <p class="makna-label">Makna</p>
+                        <p class="watak-kelahiran-makna"><?= $watakBayi !== null ? htmlspecialchars($watakBayi['makna']) : '-' ?></p>
+                    </div>
+                </article>
+
+                <footer class="watak-bayi-source"><p>Sumber: Primbon Jawa — No. 105, Watak Bayi.</p><p>Bagian 'Makna' merupakan penjelasan dalam bahasa modern berdasarkan keterangan sumber Primbon Jawa.</p><p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p></footer>
+            </section>
+
             <section class="perbintangan-section" aria-labelledby="perbintangan-title">
                 <div class="perbintangan-intro">
                     <p class="eyebrow">Primbon Jawa No. 117</p>
@@ -286,6 +340,55 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                     </dl>
                 </div>
                 <footer class="perbintangan-source"><p>Sumber: Primbon Jawa — No. 117 Perbintangan.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan sumber Primbon Jawa.</p><p>Perbintangan merupakan bagian dari tradisi Primbon Jawa dan tidak dimaksudkan sebagai kepastian ilmiah mengenai masa depan, kesehatan, atau kehidupan seseorang.</p></footer>
+            </section>
+            <section class="pal-srigati-section" aria-labelledby="pal-title">
+                <div class="pal-intro">
+                    <p class="eyebrow">Primbon Jawa No. 96</p>
+                    <h3 id="pal-title">Pal Srigati</h3>
+                    <p>Perubahan rejeki penghidupan dalam siklus enam tahunan menurut Primbon Jawa.</p>
+                </div>
+
+                <div class="pal-grid">
+                    <article class="pal-current-card">
+                        <p class="pal-card-kicker">Pal Srigati saat ini</p>
+                        <p class="pal-value"><?= $palValue !== null ? htmlspecialchars((string)$palValue) : '-' ?></p>
+                        <p class="pal-value-caption">Nilai periode kehidupanmu</p>
+                        <div class="pal-stat-grid">
+                            <div><small>Neptu kelahiran</small><strong><?= htmlspecialchars($neptu["totalNeptu"]) ?></strong></div>
+                            <div><small>Usia saat ini</small><strong><?= htmlspecialchars((string) ($ageYears ?? "-")) ?> <em>th</em></strong></div>
+                            <div><small>Periode aktif</small><strong><?= $palPeriodKey !== null ? htmlspecialchars((string) ((int) $palPeriodKey - 6)) . '–' . htmlspecialchars((string) $palPeriodKey) : '-' ?> <em>th</em></strong></div>
+                        </div>
+                        <p class="pal-interpretation">
+                            <?php if ($palValue === 1): ?>
+                                Menurut keterangan Primbon, angka 1 merupakan nilai terendah dalam perhitungan Pal Srigati.
+                            <?php elseif ($palValue === 9): ?>
+                                Menurut keterangan Primbon, angka 9 merupakan nilai tertinggi dalam perhitungan Pal Srigati.
+                            <?php else: ?>
+                                Menurut keterangan Primbon, angka yang lebih besar menunjukkan keadaan yang lebih beruntung dan menyenangkan.
+                            <?php endif; ?>
+                        </p>
+                        <p class="pal-scale">Skala: 1–9 (1 = terendah, 9 = tertinggi)</p>
+                    </article>
+
+                    <aside class="pal-timeline">
+                        <div class="pal-timeline-heading"><div><p>Lintasan hidup</p><h4>Timeline enam tahunan</h4></div><span>Nilai 1–9</span></div>
+                        <div class="pal-timeline-list">
+                            <?php foreach ($palTimeline as $ageKey => $row): ?>
+                                <?php $isCurrent = $ageKey === $palPeriodKey; ?>
+                                <div class="pal-timeline-item<?= $isCurrent ? ' current' : '' ?>">
+                                    <div class="pal-timeline-label"><?= htmlspecialchars($row['label']) ?> tahun</div>
+                                    <div class="pal-timeline-value"><?= htmlspecialchars((string)$row['value']) ?></div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </aside>
+                </div>
+
+                <footer class="pal-source">
+                    <p>Sumber: Primbon Jawa — No. 96 Pal Srigati.</p>
+                    <p>Pal Srigati merupakan perhitungan tradisional Primbon Jawa mengenai perubahan rejeki penghidupan dalam siklus enam tahunan berdasarkan jumlah neptu hari dan pekan kelahiran.</p>
+                    <p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan kepastian mengenai kondisi rejeki, kehidupan, atau masa depan seseorang.</p>
+                </footer>
             </section>
         </section>
     <?php endif; ?>
