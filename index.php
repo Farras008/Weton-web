@@ -304,6 +304,29 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                 <footer class="watak-kelahiran-source"><p>Sumber: Primbon Jawa — No. 100, Watak bayi menurut hari dan pekan kelahiran.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan dalam sumber Primbon Jawa.</p><p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p></footer>
             </section>
 
+            <section class="premium-lock" aria-labelledby="full-reading-title">
+                <div class="premium-teaser" aria-hidden="true">
+                    <article class="premium-teaser-card"><p>Primbon Jawa No. 105</p><h3>Watak Bayi</h3><span>Petikan pembacaan dan makna kelahiranmu</span></article>
+                    <article class="premium-teaser-card"><p>Lintasan hidup</p><h3>Pal Srigati</h3><span>Periode rezeki dan penghidupan</span></article>
+                    <article class="premium-teaser-card"><p>Primbon Jawa No. 22 &amp; 23</p><h3>Jodoh &amp; Pernikahan</h3><span>Gambaran pasangan menurut neptu</span></article>
+                </div>
+                <div class="premium-lock-card">
+                    <p class="eyebrow">Pembacaan lengkap</p>
+                    <h3 id="full-reading-title">Masih ada pembacaan yang menantimu</h3>
+                    <p>Temukan watak bayi menurut neptu dan tanggal lahir, arah rezeki lewat Pal Srigati, perbintangan, hingga gambaran jodoh dan pernikahanmu.</p>
+                    <p class="premium-lock-hook">Masukkan emailmu—setelah pembayaran tervalidasi, pembacaan lengkap akan dikirim langsung ke inbox.</p>
+                    <form method="post" action="payment/create.php" class="payment-form">
+                        <input type="hidden" name="csrf" value="<?= htmlspecialchars($paymentCsrf, ENT_QUOTES, 'UTF-8') ?>">
+                        <input type="hidden" name="birth_date" value="<?= htmlspecialchars(sprintf('%04d-%02d-%02d', (int) $thn, (int) $bln, (int) $tgl), ENT_QUOTES, 'UTF-8') ?>">
+                        <input type="hidden" name="birth_time" value="<?= htmlspecialchars($waktuLahir, ENT_QUOTES, 'UTF-8') ?>">
+                        <label for="payment-email">Email untuk menerima pembacaan lengkap</label>
+                        <div class="payment-form-row"><input type="email" id="payment-email" name="email" maxlength="254" autocomplete="email" required placeholder="nama@email.com"><button type="submit">Bayar Rp1.000 &amp; Kirim ke Email <span class="button-arrow" aria-hidden="true">→</span></button></div>
+                    </form>
+                    <p class="payment-note">Bagian lengkap diproses aman oleh server dan dikirim setelah pembayaran berhasil.</p>
+                </div>
+            </section>
+
+            <?php if (false): // Konten premium tidak dikirim ke browser sebelum pembayaran tervalidasi. ?>
             <section class="watak-bayi-section" aria-labelledby="watak-bayi-title">
                 <div class="watak-bayi-intro">
                     <p class="eyebrow">Primbon Jawa No. 105</p>
@@ -465,6 +488,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                 </form>
                 <p class="payment-note">Hasil gratis di atas tetap dapat Anda baca tanpa pembayaran.</p>
             </section>
+            <?php endif; ?>
         </section>
     <?php endif; ?>
 </main>
