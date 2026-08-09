@@ -1,5 +1,7 @@
 <?php
 
+session_start();
+
 require_once __DIR__ . "/lib/Hari.php";
 require_once __DIR__ . "/lib/Pasaran.php";
 require_once __DIR__ . "/lib/NeptuCalculator.php";
@@ -37,6 +39,7 @@ $ageYears = null;
 $watakBayi = null;
 $watakBayiTanggal = null;
 $jodohRekomendasi = null;
+$paymentCsrf = $_SESSION['payment_csrf'] ??= bin2hex(random_bytes(32));
 
 $bulanList = [
     1 => "Januari",
@@ -447,6 +450,20 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                     <?php endforeach; endforeach; ?>
                 </div></details>
                 <footer class="jodoh-source"><p>Sumber: Primbon Jawa — No. 22 dan No. 23 Perhitungan untuk suami istri (Pernikahan).</p><p>Perhitungan ini merupakan bagian dari tradisi Primbon Jawa dan digunakan sebagai bahan refleksi budaya. Hasil perhitungan bukan kepastian mengenai kecocokan, masa depan, atau keberlangsungan sebuah hubungan.</p></footer>
+            </section>
+
+            <section class="full-reading-cta" aria-labelledby="full-reading-title">
+                <p class="eyebrow">Pembacaan lengkap</p>
+                <h3 id="full-reading-title">Ingin membaca makna wetonmu secara lengkap?</h3>
+                <p>Masukkan email untuk menerima hasil lengkap setelah pembayaran. Pembacaan lengkap diproses dan dikirim oleh server setelah pembayaran tervalidasi.</p>
+                <form method="post" action="payment/create.php" class="payment-form">
+                    <input type="hidden" name="csrf" value="<?= htmlspecialchars($paymentCsrf, ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="hidden" name="birth_date" value="<?= htmlspecialchars(sprintf('%04d-%02d-%02d', (int) $thn, (int) $bln, (int) $tgl), ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="hidden" name="birth_time" value="<?= htmlspecialchars($waktuLahir, ENT_QUOTES, 'UTF-8') ?>">
+                    <label for="payment-email">Email</label>
+                    <div class="payment-form-row"><input type="email" id="payment-email" name="email" maxlength="254" autocomplete="email" required placeholder="nama@email.com"><button type="submit">Bayar Rp1.000 &amp; Kirim ke Email <span class="button-arrow" aria-hidden="true">→</span></button></div>
+                </form>
+                <p class="payment-note">Hasil gratis di atas tetap dapat Anda baca tanpa pembayaran.</p>
             </section>
         </section>
     <?php endif; ?>
