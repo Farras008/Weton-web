@@ -140,6 +140,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Weton Online</title>
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
 
     <link rel="stylesheet" href="assets/css/style.css?v=<?= urlencode((string) $stylesheetVersion) ?>">
 
