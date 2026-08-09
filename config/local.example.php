@@ -4,10 +4,10 @@
 // Do not commit config/local.php.
 return [
     'db' => [
-        'host' => 'localhost',
+        'host' => 'srv1981.hstgr.io',
         'port' => 3306,
-        'name' => 'YOUR_DATABASE_NAME',
-        'user' => 'YOUR_DATABASE_USER',
+        'name' => 'u468044357_weton_db',
+        'user' => 'u468044357_weton',
         'password' => 'YOUR_DATABASE_PASSWORD',
     ],
     'duitku' => [
