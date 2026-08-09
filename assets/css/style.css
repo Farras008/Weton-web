@@ -110,16 +110,19 @@ button:hover { box-shadow: 0 13px 22px rgba(13,52,43,.3); filter: brightness(1.0
 .jodoh-intro .eyebrow { color: #8a6b2e; }
 .jodoh-intro h3 { color: var(--forest); font-family: 'Playfair Display', Georgia, serif; font-size: clamp(29px, 4vw, 38px); letter-spacing: -.03em; }
 .jodoh-intro > p:last-child { margin-top: 9px; color: var(--muted); font-size: 14px; line-height: 1.65; }
-.jodoh-user-neptu { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 24px; padding: 18px 22px; background: #f7eedb; border: 1px solid #dfc88f; border-radius: 13px; }
-.jodoh-user-neptu span { color: #8a6b2e; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; display: block; }
-.jodoh-user-neptu strong { color: var(--forest); font-family: 'Playfair Display', Georgia, serif; font-size: 34px; line-height: 1; display: block; margin-top: 4px; }
-.jodoh-user-neptu p { color: #56685e; font-size: 13px; line-height: 1.6; margin: 0; max-width: 640px; }
+.jodoh-user-neptu { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 34px; margin-top: 24px; padding: 25px 30px; overflow: hidden; color: #fffaf0; background: radial-gradient(circle at 93% 8%, rgba(217,175,86,.22), transparent 12rem), linear-gradient(135deg, #1b5d4b, #0a3028); border: 1px solid rgba(242,213,144,.4); border-radius: 18px; box-shadow: 0 12px 24px rgba(13,52,43,.14), inset 0 1px rgba(255,255,255,.08); }
+.jodoh-user-neptu::after { position: absolute; right: 24px; bottom: -32px; color: rgba(242,213,144,.12); content: '✦'; font-size: 150px; line-height: 1; }
+.jodoh-user-neptu-value { position: relative; z-index: 1; min-width: 128px; flex: 0 0 auto; padding-right: 30px; border-right: 1px solid rgba(242,213,144,.3); }
+.jodoh-user-neptu span { color: var(--gold-light); font-size: 11px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; display: block; }
+.jodoh-user-neptu strong { color: #fffaf0; font-family: 'Playfair Display', Georgia, serif; font-size: 48px; line-height: .95; display: block; margin-top: 7px; letter-spacing: -.04em; }
+.jodoh-user-neptu p { position: relative; z-index: 1; color: rgba(255,250,240,.82); font-size: 14px; line-height: 1.65; margin: 0; max-width: 640px; }
 .jodoh-group { margin-top: 32px; }
 .jodoh-group-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .jodoh-group-heading h4 { color: #8a6b2e; font-size: 11px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; margin: 0; }
 .jodoh-group-count { color: #56685e; font-size: 12px; }
 .jodoh-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 14px; }
 .jodoh-card { display: grid; gap: 12px; padding: 20px; background: #fffdf7; border: 1px solid #e3d4af; border-radius: 16px; min-height: 260px; }
+.jodoh-card--partial { align-content: start; }
 .jodoh-utama .jodoh-card { border-top: 3px solid #1d5a4b; }
 .jodoh-alternatif .jodoh-card { border-top: 3px solid #c99a3e; }
 .jodoh-kurang-selaras .jodoh-card { border-top: 3px solid #a98267; }
@@ -143,4 +146,4 @@ button:hover { box-shadow: 0 13px 22px rgba(13,52,43,.3); filter: brightness(1.0
 .jodoh-all-content { display: grid; gap: 9px; margin-top: 14px; color: #5c6d63; font-size: 12px; line-height: 1.55; }
 .jodoh-source { margin-top: 20px; color: #718078; font-size: 11px; line-height: 1.65; }
 .jodoh-source p + p { margin-top: 5px; }
-@media (max-width: 760px) { .jodoh-section { margin-top: 38px; padding-top: 31px; } .jodoh-user-neptu { flex-wrap: wrap; } .jodoh-grid { grid-template-columns: 1fr; } .jodoh-card { min-height: auto; } .jodoh-group-heading { flex-direction: column; align-items: stretch; } .jodoh-user-neptu strong { font-size: 28px; } .jodoh-result small { font-size: 11px; } .jodoh-reading, .jodoh-weton { font-size: 12px; } }
+@media (max-width: 760px) { .jodoh-section { margin-top: 38px; padding-top: 31px; } .jodoh-user-neptu { align-items: flex-start; flex-direction: column; gap: 17px; padding: 23px 22px; } .jodoh-user-neptu-value { width: 100%; padding: 0 0 16px; border-right: 0; border-bottom: 1px solid rgba(242,213,144,.3); } .jodoh-user-neptu strong { font-size: 40px; } .jodoh-grid { grid-template-columns: 1fr; } .jodoh-card { min-height: auto; } .jodoh-group-heading { flex-direction: column; align-items: stretch; } .jodoh-result small { font-size: 11px; } .jodoh-reading, .jodoh-weton { font-size: 12px; } }

@@ -414,22 +414,28 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 
             <section class="jodoh-section" aria-labelledby="jodoh-title">
                 <div class="jodoh-intro"><p class="eyebrow">Primbon Jawa No. 22 &amp; 23</p><h3 id="jodoh-title">Jodoh &amp; Pernikahan</h3><p>Melihat kemungkinan pasangan berdasarkan jumlah neptu kelahiran menurut perhitungan Primbon Jawa.</p></div>
-                <div class="jodoh-user-neptu"><span>Neptumu</span><strong><?= $neptu["totalNeptu"] ?></strong><p>Beberapa neptu pasangan berikut memberi hasil yang lebih selaras menurut sumber.</p></div>
+                <div class="jodoh-user-neptu">
+                    <div class="jodoh-user-neptu-value"><span>Neptumu</span><strong><?= $neptu["totalNeptu"] ?></strong></div>
+                    <p>Beberapa neptu pasangan berikut memberi hasil yang lebih selaras menurut sumber.</p>
+                </div>
 
                 <?php $jodohGroups = ["utama" => "Rekomendasi utama", "alternatif" => "Alternatif", "kurang-selaras" => "Kurang selaras"]; ?>
                 <?php foreach ($jodohGroups as $groupKey => $groupLabel): ?>
                     <div class="jodoh-group jodoh-<?= $groupKey ?>"><h4><?= $groupLabel ?></h4><div class="jodoh-grid">
                         <?php foreach ($jodohRekomendasi[$groupKey] as $jodoh): ?>
-                            <article class="jodoh-card">
+                            <article class="jodoh-card<?= $jodoh["result22"] === null ? " jodoh-card--partial" : "" ?>">
                                 <p class="jodoh-neptu-label">Neptu pasangan</p><strong class="jodoh-neptu"><?= $jodoh["partnerNeptu"] ?></strong>
                                 <p class="jodoh-weton"><?= htmlspecialchars(implode(" · ", $jodoh["wetonPasangan"])) ?></p>
-                                <?php if (isset($jodoh["error"])): ?>
-                                    <p class="jodoh-error"><?= htmlspecialchars($jodoh["error"]) ?></p>
-                                <?php else: ?>
-                                    <div class="jodoh-result"><small>Total: <?= $neptu["totalNeptu"] ?> + <?= $jodoh["partnerNeptu"] ?> = <?= $jodoh["combinedNeptu"] ?></small><strong><?= htmlspecialchars($jodoh["result22"]["nama"]) ?></strong><p class="jodoh-arti">Arti: <?= htmlspecialchars($jodoh["result22"]["arti"]) ?></p><span class="jodoh-status <?= $jodoh["result23"]["status"] === "baik" ? "baik" : "kurang-baik" ?>"><?= htmlspecialchars($jodoh["result23"]["nama"]) ?> · <?= htmlspecialchars($jodoh["result23"]["status"]) ?></span></div>
+                                <div class="jodoh-result"><small>Total: <?= $neptu["totalNeptu"] ?> + <?= $jodoh["partnerNeptu"] ?> = <?= $jodoh["combinedNeptu"] ?></small>
+                                    <?php if ($jodoh["result22"] !== null): ?>
+                                        <strong><?= htmlspecialchars($jodoh["result22"]["nama"]) ?></strong><p class="jodoh-arti">Arti: <?= htmlspecialchars($jodoh["result22"]["arti"]) ?></p>
+                                    <?php endif; ?>
+                                    <span class="jodoh-status <?= $jodoh["result23"]["status"] === "baik" ? "baik" : "kurang-baik" ?>"><?= htmlspecialchars($jodoh["result23"]["nama"]) ?> · <?= htmlspecialchars($jodoh["result23"]["status"]) ?></span>
+                                </div>
+                                <?php if ($jodoh["result22"] !== null): ?>
                                     <div class="jodoh-reading"><p class="jodoh-reading-title">Gambaran hubungan</p><p><?= htmlspecialchars($jodoh["result22"]["makna"]) ?></p></div>
-                                    <div class="jodoh-reading"><p class="jodoh-reading-title">Arah rumah tangga</p><p><?= htmlspecialchars($jodoh["result23"]["makna"]) ?></p></div>
                                 <?php endif; ?>
+                                <div class="jodoh-reading"><p class="jodoh-reading-title">Arah rumah tangga</p><p><?= htmlspecialchars($jodoh["result23"]["makna"]) ?></p></div>
                             </article>
                         <?php endforeach; ?>
                     </div></div>
@@ -437,7 +443,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 
                 <details class="jodoh-all"><summary>Lihat semua kemungkinan</summary><div class="jodoh-all-content">
                     <?php foreach (["utama", "alternatif", "kurang-selaras"] as $groupKey): foreach ($jodohRekomendasi[$groupKey] as $jodoh): ?>
-                        <p><strong>Neptu <?= $jodoh["partnerNeptu"] ?></strong> — <?= htmlspecialchars(implode(", ", $jodoh["wetonPasangan"])) ?><?php if (!isset($jodoh["error"])): ?>; <?= htmlspecialchars($jodoh["result22"]["nama"]) ?> dan <?= htmlspecialchars($jodoh["result23"]["nama"]) ?>.<?php else: ?>; <?= htmlspecialchars($jodoh["error"]) ?><?php endif; ?></p>
+                        <p><strong>Neptu <?= $jodoh["partnerNeptu"] ?></strong> — <?= htmlspecialchars(implode(", ", $jodoh["wetonPasangan"])) ?>; <?php if ($jodoh["result22"] !== null): ?><?= htmlspecialchars($jodoh["result22"]["nama"]) ?> dan <?php endif; ?><?= htmlspecialchars($jodoh["result23"]["nama"]) ?>.</p>
                     <?php endforeach; endforeach; ?>
                 </div></details>
                 <footer class="jodoh-source"><p>Sumber: Primbon Jawa — No. 22 dan No. 23 Perhitungan untuk suami istri (Pernikahan).</p><p>Perhitungan ini merupakan bagian dari tradisi Primbon Jawa dan digunakan sebagai bahan refleksi budaya. Hasil perhitungan bukan kepastian mengenai kecocokan, masa depan, atau keberlangsungan sebuah hubungan.</p></footer>

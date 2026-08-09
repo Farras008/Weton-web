@@ -69,6 +69,9 @@ expect(WatakBayiTanggal::get(30)["sumber"] !== "", "Watak bayi tanggal 30 harus 
 expect(WatakBayiTanggal::get(31) === null, "Tanggal 31 tidak boleh memakai fallback data lain");
 $jodohDana = MarriageCalculator::getMarriageResult(9, 8);
 expect($jodohDana["combinedNeptu"] === 17 && $jodohDana["result23"]["nama"] === "Dana" && $jodohDana["result23"]["status"] === "baik", "Ahad Wage dan Selasa Legi harus menghasilkan Dana yang baik");
+
+$jodohLunguh = MarriageCalculator::getMarriageResult(13, 17);
+expect($jodohLunguh["result22"] === null && $jodohLunguh["result23"]["nama"] === "Lunguh", "Hasil No. 23 harus tetap tampil ketika total neptu tidak memiliki hasil No. 22");
 expect(Marriage22::calculate(28)["nama"] === "Lebu Katiup Angin", "Total 28 harus menghasilkan Lebu Katiup Angin pada No. 22");
 expect(count(MarriageCalculator::getPartnerRecommendations(13)["utama"]) + count(MarriageCalculator::getPartnerRecommendations(13)["alternatif"]) + count(MarriageCalculator::getPartnerRecommendations(13)["kurang-selaras"]) === 12, "Rekomendasi harus memuat neptu pasangan 7–18");
 

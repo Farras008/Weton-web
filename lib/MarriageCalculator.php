@@ -26,9 +26,16 @@ final class MarriageCalculator
         }
 
         $combinedNeptu = $userNeptu + $partnerNeptu;
-        $result22 = Marriage22::calculate($combinedNeptu);
         $result23 = Marriage23::calculate($combinedNeptu);
-        $kurangBaik22 = in_array($result22["nama"], ["Satriya Wirang", "Bumi Kapetak", "Lebu Katiup Angin"], true);
+        $result22 = null;
+
+        try {
+            $result22 = Marriage22::calculate($combinedNeptu);
+        } catch (LogicException) {
+            // No. 23 tetap dapat dihitung walau total ini tidak memiliki hasil di No. 22.
+        }
+
+        $kurangBaik22 = $result22 !== null && in_array($result22["nama"], ["Satriya Wirang", "Bumi Kapetak", "Lebu Katiup Angin"], true);
 
         $kelompok = $result23["status"] === "baik" && !$kurangBaik22 ? "utama" : ($result23["status"] === "baik" ? "alternatif" : "kurang-selaras");
 
@@ -39,12 +46,8 @@ final class MarriageCalculator
     {
         $groups = ["utama" => [], "alternatif" => [], "kurang-selaras" => []];
         for ($partnerNeptu = 7; $partnerNeptu <= 18; $partnerNeptu++) {
-            try {
-                $result = self::getMarriageResult($userNeptu, $partnerNeptu);
-                $groups[$result["kelompok"]][] = $result;
-            } catch (LogicException $exception) {
-                $groups["kurang-selaras"][] = ["partnerNeptu" => $partnerNeptu, "error" => $exception->getMessage(), "wetonPasangan" => self::getWetonByNeptu($partnerNeptu)];
-            }
+            $result = self::getMarriageResult($userNeptu, $partnerNeptu);
+            $groups[$result["kelompok"]][] = $result;
         }
         return $groups;
     }
