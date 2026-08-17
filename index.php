@@ -58,7 +58,7 @@ $bulanList = [
 
 $visitorCount = VisitorCounter::getCount();
 
-if ($_SERVER["REQUEST_METHOD"] === "GET" && VisitorCounter::isEnabled()) {
+if ($_SERVER["REQUEST_METHOD"] === "POST" && VisitorCounter::isEnabled()) {
     $visitorCount = VisitorCounter::increment();
 } elseif ($_SERVER["REQUEST_METHOD"] === "POST") {
     $tgl = trim($_POST["tanggal"] ?? "");
