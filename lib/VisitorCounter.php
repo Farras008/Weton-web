@@ -6,10 +6,13 @@ class VisitorCounter
     private const STORAGE_DIR = __DIR__ . "/../data";
     private const STORAGE_FILE = "visitor_count.txt";
 
-    /** Runtime counter is disabled by default so local visits do not change production data. */
+    /**
+     * Count submitted calculations unless the deployment explicitly disables it.
+     * This keeps the counter working when config/local.php is not deployed.
+     */
     public static function isEnabled(): bool
     {
-        return filter_var(app_config('VISITOR_COUNTER_ENABLED', 'false'), FILTER_VALIDATE_BOOLEAN);
+        return filter_var(app_config('VISITOR_COUNTER_ENABLED', 'true'), FILTER_VALIDATE_BOOLEAN);
     }
 
     public static function increment(): int
