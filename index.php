@@ -58,9 +58,7 @@ $bulanList = [
 
 $visitorCount = VisitorCounter::getCount();
 
-if ($_SERVER["REQUEST_METHOD"] === "POST" && VisitorCounter::isEnabled()) {
-    $visitorCount = VisitorCounter::increment();
-} elseif ($_SERVER["REQUEST_METHOD"] === "POST") {
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $tgl = trim($_POST["tanggal"] ?? "");
     $bln = trim($_POST["bulan"] ?? "");
     $thn = trim($_POST["tahun"] ?? "");
@@ -128,6 +126,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && VisitorCounter::isEnabled()) {
                     $watakBayi = null;
             }
         }
+    }
+
+    if (VisitorCounter::isEnabled()) {
+        $visitorCount = VisitorCounter::increment();
     }
 }
 
