@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" href="/assets/favicon.png"><link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body><main class="site-shell"><header class="site-header"><a class="brand" href="index.php#hitung-weton"><span class="brand-mark"><span>W</span></span><span>Weton Jawa</span></a><nav class="site-nav" aria-label="Navigasi utama"><a href="index.php#hitung-weton">Home</a><a href="tentang.php" aria-current="page">Tentang</a><a href="kebijakan-privasi.php">Privasi</a><a href="kontak.php">Kontak</a></nav></header>
-<article class="static-page longform-page">
+<article class="static-page longform-page editorial-page about-page">
     <header class="page-hero"><p class="eyebrow">Tentang kami</p><h1>Mendekatkan tradisi weton kepada kehidupan hari ini.</h1><p class="static-lead">Weton Online adalah ruang digital untuk mengenal perpaduan hari, pasaran, dan neptu dalam kalender Jawa—dengan bahasa yang mudah dipahami dan tetap menghormati sumber tradisinya.</p></header>
     <div class="page-divider"></div>
     <nav class="article-nav" aria-label="Daftar isi"><p>Di halaman ini</p><a href="#weton">Mengenal weton</a><a href="#cara-kerja">Cara kerja</a><a href="#prinsip">Prinsip kami</a><a href="#hasil-lengkap">Hasil lengkap</a></nav>
