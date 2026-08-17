@@ -28,5 +28,7 @@ return [
     ],
     'app' => [
         'url' => 'https://weton.online',
+        // Aktifkan hanya pada config/local.php di hosting production.
+        'visitor_counter_enabled' => true,
     ],
 ];

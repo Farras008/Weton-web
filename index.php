@@ -58,7 +58,7 @@ $bulanList = [
 
 $visitorCount = VisitorCounter::getCount();
 
-if ($_SERVER["REQUEST_METHOD"] === "GET") {
+if ($_SERVER["REQUEST_METHOD"] === "GET" && VisitorCounter::isEnabled()) {
     $visitorCount = VisitorCounter::increment();
 } elseif ($_SERVER["REQUEST_METHOD"] === "POST") {
     $tgl = trim($_POST["tanggal"] ?? "");
@@ -142,7 +142,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Weton Online — Hitung Weton Jawa &amp; Neptu Kelahiran</title>
+    <title>Weton Online</title>
     <meta name="description" content="Hitung weton Jawa, neptu, watak kelahiran, arah kejayaan, dan pembacaan Primbon Jawa secara online.">
     <link rel="canonical" href="https://weton.online/">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6150985802567042" crossorigin="anonymous"></script>
@@ -209,7 +209,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
             <label for="waktu_lahir">Waktu kelahiran</label>
             <select name="waktu_lahir" id="waktu_lahir" required>
                 <option value="">Pilih waktu kelahiran</option>
-                <option value="siang" <?= $waktuLahir === "siang" ? "selected" : "" ?>>Pagi–sore (sebelum pukul 18.00)</option>
+                <option value="siang" <?= $waktuLahir === "siang" ? "selected" : "" ?>>Pagi sampai sore (sebelum pukul 18.00)</option>
                 <option value="malam" <?= $waktuLahir === "malam" ? "selected" : "" ?>>Malam (pukul 18.00 atau setelahnya)</option>
             </select>
             <p class="field-help">Dalam perhitungan Jawa, malam setelah pukul 18.00 mengikuti hari berikutnya.</p>
@@ -283,7 +283,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                     </article>
                 </div>
                 <footer class="watak-source">
-                    <p>Sumber: Primbon Jawa — No. 109 Watak Hari dan No. 110 Watak Pekan/Pasaran.</p>
+                    <p>Sumber: Primbon Jawa, No. 109 Watak Hari dan No. 110 Watak Pekan/Pasaran.</p>
                     <p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan dalam sumber Primbon Jawa.</p>
                     <p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p>
                 </footer>
@@ -304,7 +304,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                         <p class="watak-kelahiran-makna"><?= htmlspecialchars($watakKelahiran["makna"]) ?></p>
                     </div>
                 </article>
-                <footer class="watak-kelahiran-source"><p>Sumber: Primbon Jawa — No. 100, Watak bayi menurut hari dan pekan kelahiran.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan dalam sumber Primbon Jawa.</p><p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p></footer>
+                <footer class="watak-kelahiran-source"><p>Sumber: Primbon Jawa, No. 100, Watak bayi menurut hari dan pekan kelahiran.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan dalam sumber Primbon Jawa.</p><p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p></footer>
             </section>
 
             <section class="watak-bayi-section" aria-labelledby="watak-bayi-title">
@@ -339,7 +339,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                     <div class="watak-bayi-unavailable">Data watak untuk tanggal <?= htmlspecialchars((string) $tgl) ?> belum tersedia dalam sumber yang digunakan.</div>
                 <?php endif; ?>
 
-                <footer class="watak-bayi-source"><p>Sumber: Primbon Jawa — No. 105, Watak Bayi.</p><p>Sumber: Primbon Jawa — No. 101, Watak bayi menurut tanggal kelahiran.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan sumber Primbon Jawa.</p><p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p></footer>
+                <footer class="watak-bayi-source"><p>Sumber: Primbon Jawa, No. 105, Watak Bayi.</p><p>Sumber: Primbon Jawa, No. 101, Watak bayi menurut tanggal kelahiran.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan sumber Primbon Jawa.</p><p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p></footer>
             </section>
 
             <section class="perbintangan-section" aria-labelledby="perbintangan-title">
@@ -366,7 +366,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                         <div><dt>Penyakit</dt><dd><?= htmlspecialchars($perbintangan["penyakit"]) ?><small>Menurut keterangan sumber Primbon Jawa; bukan penilaian medis.</small></dd></div>
                     </dl>
                 </div>
-                <footer class="perbintangan-source"><p>Sumber: Primbon Jawa — No. 117 Perbintangan.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan sumber Primbon Jawa.</p><p>Perbintangan merupakan bagian dari tradisi Primbon Jawa dan tidak dimaksudkan sebagai kepastian ilmiah mengenai masa depan, kesehatan, atau kehidupan seseorang.</p></footer>
+                <footer class="perbintangan-source"><p>Sumber: Primbon Jawa, No. 117 Perbintangan.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan sumber Primbon Jawa.</p><p>Perbintangan merupakan bagian dari tradisi Primbon Jawa dan tidak dimaksudkan sebagai kepastian ilmiah mengenai masa depan, kesehatan, atau kehidupan seseorang.</p></footer>
             </section>
             <section class="pal-srigati-section" aria-labelledby="pal-title">
                 <div class="pal-intro">
@@ -383,7 +383,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                         <div class="pal-stat-grid">
                             <div><small>Neptu kelahiran</small><strong><?= htmlspecialchars($neptu["totalNeptu"]) ?></strong></div>
                             <div><small>Usia saat ini</small><strong><?= htmlspecialchars((string) ($ageYears ?? "-")) ?> <em>th</em></strong></div>
-                            <div><small>Periode aktif</small><strong><?= $palPeriodKey !== null ? htmlspecialchars((string) ((int) $palPeriodKey - 6)) . '–' . htmlspecialchars((string) $palPeriodKey) : '-' ?> <em>th</em></strong></div>
+                            <div><small>Periode aktif</small><strong><?= $palPeriodKey !== null ? htmlspecialchars((string) ((int) $palPeriodKey - 6)) . ' sampai ' . htmlspecialchars((string) $palPeriodKey) : '-' ?> <em>th</em></strong></div>
                         </div>
                         <p class="pal-interpretation">
                             <?php if ($palValue === 1): ?>
@@ -394,11 +394,11 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                                 Menurut keterangan Primbon, angka yang lebih besar menunjukkan keadaan yang lebih beruntung dan menyenangkan.
                             <?php endif; ?>
                         </p>
-                        <p class="pal-scale">Skala: 1–9 (1 = terendah, 9 = tertinggi)</p>
+                        <p class="pal-scale">Skala: 1 sampai 9 (1 = terendah, 9 = tertinggi)</p>
                     </article>
 
                     <aside class="pal-timeline">
-                        <div class="pal-timeline-heading"><div><p>Lintasan hidup</p><h4>Timeline enam tahunan</h4></div><span>Nilai 1–9</span></div>
+                        <div class="pal-timeline-heading"><div><p>Lintasan hidup</p><h4>Timeline enam tahunan</h4></div><span>Nilai 1 sampai 9</span></div>
                         <div class="pal-timeline-list">
                             <?php foreach ($palTimeline as $ageKey => $row): ?>
                                 <?php $isCurrent = $ageKey === $palPeriodKey; ?>
@@ -412,7 +412,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
                 </div>
 
                 <footer class="pal-source">
-                    <p>Sumber: Primbon Jawa — No. 96 Pal Srigati.</p>
+                    <p>Sumber: Primbon Jawa, No. 96 Pal Srigati.</p>
                     <p>Pal Srigati merupakan perhitungan tradisional Primbon Jawa mengenai perubahan rejeki penghidupan dalam siklus enam tahunan berdasarkan jumlah neptu hari dan pekan kelahiran.</p>
                     <p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan kepastian mengenai kondisi rejeki, kehidupan, atau masa depan seseorang.</p>
                 </footer>
@@ -449,10 +449,10 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 
                 <details class="jodoh-all"><summary>Lihat semua kemungkinan</summary><div class="jodoh-all-content">
                     <?php foreach (["utama", "alternatif", "kurang-selaras"] as $groupKey): foreach ($jodohRekomendasi[$groupKey] as $jodoh): ?>
-                        <p><strong>Neptu <?= $jodoh["partnerNeptu"] ?></strong> — <?= htmlspecialchars(implode(", ", $jodoh["wetonPasangan"])) ?>; <?php if ($jodoh["result22"] !== null): ?><?= htmlspecialchars($jodoh["result22"]["nama"]) ?> dan <?php endif; ?><?= htmlspecialchars($jodoh["result23"]["nama"]) ?>.</p>
+                        <p><strong>Neptu <?= $jodoh["partnerNeptu"] ?></strong>, <?= htmlspecialchars(implode(", ", $jodoh["wetonPasangan"])) ?>; <?php if ($jodoh["result22"] !== null): ?><?= htmlspecialchars($jodoh["result22"]["nama"]) ?> dan <?php endif; ?><?= htmlspecialchars($jodoh["result23"]["nama"]) ?>.</p>
                     <?php endforeach; endforeach; ?>
                 </div></details>
-                <footer class="jodoh-source"><p>Sumber: Primbon Jawa — No. 22 dan No. 23 Perhitungan untuk suami istri (Pernikahan).</p><p>Perhitungan ini merupakan bagian dari tradisi Primbon Jawa dan digunakan sebagai bahan refleksi budaya. Hasil perhitungan bukan kepastian mengenai kecocokan, masa depan, atau keberlangsungan sebuah hubungan.</p></footer>
+                <footer class="jodoh-source"><p>Sumber: Primbon Jawa, No. 22 dan No. 23 Perhitungan untuk suami istri (Pernikahan).</p><p>Perhitungan ini merupakan bagian dari tradisi Primbon Jawa dan digunakan sebagai bahan refleksi budaya. Hasil perhitungan bukan kepastian mengenai kecocokan, masa depan, atau keberlangsungan sebuah hubungan.</p></footer>
             </section>
 
             <section class="full-reading-cta" aria-labelledby="full-reading-title">

@@ -1,5 +1,6 @@
 .env
 /config/local.php
+/data/visitor_count.txt
 /vendor/
 *.log
 .DS_Store

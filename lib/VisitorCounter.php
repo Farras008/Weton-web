@@ -1,9 +1,16 @@
 <?php
+require_once __DIR__ . '/../config/config.php';
 
 class VisitorCounter
 {
     private const STORAGE_DIR = __DIR__ . "/../data";
     private const STORAGE_FILE = "visitor_count.txt";
+
+    /** Runtime counter is disabled by default so local visits do not change production data. */
+    public static function isEnabled(): bool
+    {
+        return filter_var(app_config('VISITOR_COUNTER_ENABLED', 'false'), FILTER_VALIDATE_BOOLEAN);
+    }
 
     public static function increment(): int
     {

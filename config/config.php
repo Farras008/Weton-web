@@ -23,7 +23,7 @@ function app_config(string $key, ?string $default = null): ?string
         'DUITKU_ENV' => ['duitku', 'environment'], 'DUITKU_MERCHANT_CODE' => ['duitku', 'merchant_code'], 'DUITKU_API_KEY' => ['duitku', 'api_key'],
         'MAIL_HOST' => ['mail', 'host'], 'MAIL_PORT' => ['mail', 'port'], 'MAIL_USERNAME' => ['mail', 'username'], 'MAIL_PASSWORD' => ['mail', 'password'],
         'MAIL_ENCRYPTION' => ['mail', 'encryption'], 'MAIL_FROM_ADDRESS' => ['mail', 'from_address'], 'MAIL_FROM_NAME' => ['mail', 'from_name'], 'MAIL_TEST_TOKEN' => ['mail', 'test_token'],
-        'APP_URL' => ['app', 'url'],
+        'APP_URL' => ['app', 'url'], 'VISITOR_COUNTER_ENABLED' => ['app', 'visitor_counter_enabled'],
     ];
     $path = $paths[$key] ?? null;
     if ($path !== null && isset($local[$path[0]]) && is_array($local[$path[0]]) && array_key_exists($path[1], $local[$path[0]]) && $local[$path[0]][$path[1]] !== '') {
