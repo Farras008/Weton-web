@@ -10,6 +10,7 @@ require_once __DIR__ . "/lib/WatakData.php";
 require_once __DIR__ . "/lib/PerbintanganData.php";
 require_once __DIR__ . "/lib/WatakKelahiranData.php";
 require_once __DIR__ . "/lib/VisitorCounter.php";
+require_once __DIR__ . "/lib/ArticleData.php";
 require_once __DIR__ . "/lib/PalSrigati.php";
 require_once __DIR__ . "/lib/WatakBayi.php";
 require_once __DIR__ . "/lib/WatakBayiTanggal.php";
@@ -156,12 +157,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <body>
 
 <main class="site-shell">
-<header class="site-header"><a class="brand" href="index.php" aria-label="Weton Jawa, kembali ke halaman utama"><span class="brand-mark"><span>W</span></span><span>Weton Jawa</span></a><nav class="site-nav" aria-label="Navigasi utama"><a href="#hitung-weton" aria-current="page">Home</a><a href="tentang.php">Tentang</a><a href="kebijakan-privasi.php">Privasi</a><a href="kontak.php">Kontak</a></nav></header>
+<header class="site-header"><a class="brand" href="index.php" aria-label="Weton Jawa, kembali ke halaman utama"><span class="brand-mark"><span>W</span></span><span>Weton Jawa</span></a><nav class="site-nav" aria-label="Navigasi utama"><a href="#hitung-weton" aria-current="page">Home</a><a href="artikel.php">Artikel</a><a href="tentang.php">Tentang</a><a href="kebijakan-privasi.php">Privasi</a><a href="kontak.php">Kontak</a></nav></header>
     <section class="hero">
         <div class="hero-copy">
             <p class="eyebrow">Warisan kalender Jawa</p>
             <h1>Temukan <em>makna wetonmu</em></h1>
             <p class="intro">Kenali perpaduan hari dan pasaran Jawa yang menyertai perjalanan hidupmu.</p>
+            <div class="hero-links"><a href="#hitung-weton">Hitung weton <span aria-hidden="true">↓</span></a><a href="#panduan">Jelajahi panduan <span aria-hidden="true">→</span></a></div>
             <p class="heritage-note">Sebuah cara sederhana untuk terhubung dengan tradisi.</p>
             <p class="visitor-count">Sudah dicoba oleh <?= htmlspecialchars(number_format($visitorCount, 0, ",", ".")) ?> orang</p>
         </div>
@@ -472,8 +474,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             </section>
         </section>
     <?php endif; ?>
+    <?php if ($_SERVER['REQUEST_METHOD'] !== 'POST'): ?>
+    <section class="guide-hub" id="panduan" aria-labelledby="guide-hub-title">
+        <div class="guide-hub-heading"><div><p class="eyebrow">Panduan Weton</p><h2 id="guide-hub-title">Mulai belajar dari yang paling dasar.</h2></div><p>Artikel ringkas untuk memahami weton, pasaran, dan neptu dengan konteks budaya yang mudah diikuti.</p></div>
+        <div class="guide-grid">
+            <?php foreach (ArticleData::ARTICLES as $slug => $article): ?>
+                <article class="guide-card"><p class="guide-category"><?= htmlspecialchars($article['category']) ?></p><h3><a href="<?= htmlspecialchars(ArticleData::path($slug)) ?>"><?= htmlspecialchars($article['title']) ?></a></h3><p><?= htmlspecialchars($article['description']) ?></p><footer><span><?= htmlspecialchars($article['reading_time']) ?></span><a href="<?= htmlspecialchars(ArticleData::path($slug)) ?>" aria-label="Baca <?= htmlspecialchars($article['title']) ?>">Baca artikel <span aria-hidden="true">→</span></a></footer></article>
+            <?php endforeach; ?>
+        </div>
+        <p class="guide-note">Artikel baru akan terus ditambahkan. Mulai dari panduan dasar, lalu gunakan kalkulator saat Anda siap mengetahui weton kelahiran.</p>
+    </section>
+    <?php endif; ?>
 </main>
-<footer class="site-footer"><p>© <?= date('Y') ?> Weton Online · Warisan kalender Jawa, hadir dalam bentuk digital.</p><nav aria-label="Navigasi footer"><a href="#hitung-weton">Hitung Weton</a><a href="tentang.php">Tentang</a><a href="kebijakan-privasi.php">Kebijakan Privasi</a><a href="kontak.php">Kontak</a></nav></footer>
+<footer class="site-footer"><p>© <?= date('Y') ?> Weton Online · Warisan kalender Jawa, hadir dalam bentuk digital.</p><nav aria-label="Navigasi footer"><a href="#hitung-weton">Hitung Weton</a><a href="artikel.php">Artikel</a><a href="tentang.php">Tentang</a><a href="kebijakan-privasi.php">Kebijakan Privasi</a><a href="kontak.php">Kontak</a></nav></footer>
 
 </body>
 

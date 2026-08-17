@@ -1,0 +1,7 @@
+RewriteEngine On
+
+# Endpoint sitemap standar; isinya dibangkitkan dari halaman dan artikel aktif.
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+# URL artikel yang singkat dan konsisten untuk pembaca maupun mesin pencari.
+RewriteRule ^artikel/([a-z0-9-]+)/?$ artikel.php?slug=$1 [L,QSA]
