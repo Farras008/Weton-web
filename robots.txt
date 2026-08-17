@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /payment/callback.php
+Disallow: /payment/create.php
+Disallow: /payment/retry_emails.php
+Disallow: /payment/test-email.php
+
+Sitemap: https://weton.online/sitemap.xml

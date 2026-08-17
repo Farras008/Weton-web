@@ -142,7 +142,10 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Weton Online</title>
+    <title>Weton Online — Hitung Weton Jawa &amp; Neptu Kelahiran</title>
+    <meta name="description" content="Hitung weton Jawa, neptu, watak kelahiran, arah kejayaan, dan pembacaan Primbon Jawa secara online.">
+    <link rel="canonical" href="https://weton.online/">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6150985802567042" crossorigin="anonymous"></script>
     <link rel="icon" type="image/png" href="/assets/favicon.png">
     <link rel="stylesheet" href="assets/css/style.css?v=<?= urlencode((string) $stylesheetVersion) ?>">
 
@@ -151,7 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
 <body>
 
 <main class="site-shell">
-    <a class="brand" href="index.php" aria-label="Weton Jawa, kembali ke halaman utama"><span class="brand-mark"><span>W</span></span><span>Weton Jawa</span></a>
+<header class="site-header"><a class="brand" href="index.php" aria-label="Weton Jawa, kembali ke halaman utama"><span class="brand-mark"><span>W</span></span><span>Weton Jawa</span></a><nav class="site-nav" aria-label="Navigasi utama"><a href="#hitung-weton" aria-current="page">Home</a><a href="tentang.php">Tentang</a><a href="kebijakan-privasi.php">Privasi</a><a href="kontak.php">Kontak</a></nav></header>
     <section class="hero">
         <div class="hero-copy">
             <p class="eyebrow">Warisan kalender Jawa</p>
@@ -160,7 +163,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
             <p class="heritage-note">Sebuah cara sederhana untuk terhubung dengan tradisi.</p>
             <p class="visitor-count">Sudah dicoba oleh <?= htmlspecialchars(number_format($visitorCount, 0, ",", ".")) ?> orang</p>
         </div>
-        <section class="calculator-card" aria-labelledby="form-title">
+        <section class="calculator-card" id="hitung-weton" aria-labelledby="form-title">
             <div class="card-heading"><h2 id="form-title">Hitung weton</h2><p>Masukkan tanggal lahir Anda di bawah ini.</p></div>
             <form method="POST" action="#hasil">
                 <label for="tanggal">Tanggal lahir</label>
@@ -468,6 +471,7 @@ if ($_SERVER["REQUEST_METHOD"] === "GET") {
         </section>
     <?php endif; ?>
 </main>
+<footer class="site-footer"><p>© <?= date('Y') ?> Weton Online · Warisan kalender Jawa, hadir dalam bentuk digital.</p><nav aria-label="Navigasi footer"><a href="#hitung-weton">Hitung Weton</a><a href="tentang.php">Tentang</a><a href="kebijakan-privasi.php">Kebijakan Privasi</a><a href="kontak.php">Kontak</a></nav></footer>
 
 </body>
 
