@@ -4,16 +4,16 @@
 // Do not commit config/local.php.
 return [
     'db' => [
-        'host' => 'srv1981.hstgr.io',
+        'host' => 'localhost',
         'port' => 3306,
         'name' => 'u468044357_weton_db',
         'user' => 'u468044357_weton',
-        'password' => 'YOUR_DATABASE_PASSWORD',
+        'password' => '@Sendiriku230602',
     ],
-    'duitku' => [
-        'environment' => 'sandbox',
-        'merchant_code' => 'YOUR_DUITKU_MERCHANT_CODE',
-        'api_key' => 'YOUR_DUITKU_API_KEY',
+    'louvin' => [
+        'base_url' => 'https://api.louvin.dev',
+        'api_key' => 'lv_e7e5ac7459f94854ab161ab207bdf055',
+        'slug' => 'weton-online',
     ],
     'mail' => [
         'host' => 'YOUR_SMTP_HOST',

@@ -20,7 +20,7 @@ function app_config(string $key, ?string $default = null): ?string
     $paths = [
         'DB_HOST' => ['db', 'host'], 'DB_PORT' => ['db', 'port'], 'DB_NAME' => ['db', 'name'],
         'DB_USER' => ['db', 'user'], 'DB_PASSWORD' => ['db', 'password'],
-        'DUITKU_ENV' => ['duitku', 'environment'], 'DUITKU_MERCHANT_CODE' => ['duitku', 'merchant_code'], 'DUITKU_API_KEY' => ['duitku', 'api_key'],
+        'LOUVIN_BASE_URL' => ['louvin', 'base_url'], 'LOUVIN_API_KEY' => ['louvin', 'api_key'], 'LOUVIN_SLUG' => ['louvin', 'slug'],
         'MAIL_HOST' => ['mail', 'host'], 'MAIL_PORT' => ['mail', 'port'], 'MAIL_USERNAME' => ['mail', 'username'], 'MAIL_PASSWORD' => ['mail', 'password'],
         'MAIL_ENCRYPTION' => ['mail', 'encryption'], 'MAIL_FROM_ADDRESS' => ['mail', 'from_address'], 'MAIL_FROM_NAME' => ['mail', 'from_name'], 'MAIL_TEST_TOKEN' => ['mail', 'test_token'],
         'APP_URL' => ['app', 'url'], 'VISITOR_COUNTER_ENABLED' => ['app', 'visitor_counter_enabled'],
