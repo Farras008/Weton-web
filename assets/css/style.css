@@ -271,3 +271,94 @@ button:hover { transform: translateY(-1px); }
     .tanggal-group { gap: 6px; }
     input, select { padding-inline: 8px; font-size: 13px; }
 }
+
+/* Mobile reconciliation: these rules intentionally sit last so the older
+   responsive passes above cannot produce conflicting narrow-screen layouts. */
+@media (max-width: 760px) {
+    body { min-width: 0; }
+
+    .site-shell,
+    .site-footer,
+    .payment-status-shell { width: min(100% - 28px, 1160px); }
+
+    .site-shell { padding-bottom: 34px; }
+    .site-header { align-items:stretch; }
+    .brand { min-height: 44px; }
+
+    .site-nav {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+        gap: 4px;
+        padding: 4px;
+        overflow: visible;
+        border-radius: 12px;
+    }
+
+    .site-nav a {
+        display: flex;
+        min-width: 0;
+        min-height: 40px;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 10px;
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .hero { grid-template-columns: minmax(0, 1fr); gap: 28px; padding-top: 32px; }
+    .hero-copy { max-width: 34rem; }
+    h1 { font-size: clamp(38px, 10.5vw, 51px); line-height: 1.06; }
+    .intro { max-width: 33rem; font-size: 15px; line-height: 1.7; }
+    .hero-links { gap: 8px; }
+    .hero-links a { flex: 1 1 145px; min-height: 44px; text-align: center; }
+    .heritage-note { align-items: flex-start; }
+
+    .calculator-card { padding: 23px 17px; }
+    .card-heading h2 { font-size: 27px; }
+    input, select, button { min-height: 48px; }
+    .field-help { font-size: 12px; }
+
+    .weton-detail { padding: 27px 17px; }
+    .detail-intro h2 { font-size: clamp(34px, 10vw, 45px); overflow-wrap: anywhere; }
+    .detail-grid, .watak-grid, .pal-grid, .jodoh-grid { grid-template-columns: minmax(0, 1fr); }
+    .neptu-math { gap: 5px; }
+    .neptu-math > div { padding: 9px 5px; }
+    .neptu-math strong { font-size: 22px; }
+
+    .static-page { margin-top: 34px; padding: 27px 19px; }
+    .static-page h1, .page-hero h1 { overflow-wrap: anywhere; }
+    .contact-card { padding: 19px; }
+    .site-footer { gap: 14px; padding-top: 22px; }
+    .site-footer nav { gap: 8px 14px; }
+
+    .payment-status-card { margin-top: 42px; padding: 28px 20px; }
+    .premium-lock-card { width: calc(100% - 24px); }
+}
+
+@media (max-width: 480px) {
+    .site-shell,
+    .site-footer,
+    .payment-status-shell { width: min(100% - 24px, 1160px); }
+
+    .hero { padding-top: 26px; }
+    .eyebrow { font-size: 9px; letter-spacing: .14em; }
+    .heritage-note { display: none; }
+
+    /* Keep each date field readable instead of squeezing three controls into one row. */
+    .tanggal-group { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px; }
+    .tanggal-group input:first-child { grid-column: 1; grid-row: 1; }
+    .tanggal-group input:last-child { grid-column: 2; grid-row: 1; }
+    .tanggal-group select { grid-column: 1 / -1; grid-row: 2; }
+
+    .calculator-card, .weton-detail { border-radius: 16px; }
+    .detail-grid .neptu-section, .kejayaan-card, .watak-card { padding: 17px; }
+    .neptu-math { grid-template-columns: 1fr auto 1fr; }
+    .neptu-math > span:nth-of-type(2) { display: none; }
+    .neptu-math .neptu-total { grid-column: 1 / -1; }
+    .neptu-math .neptu-total small { display: inline; margin-right: 6px; }
+    .neptu-math .neptu-total strong { display: inline; }
+
+    .page-callout, .full-reading-cta { padding: 24px 18px; }
+    .payment-form-row input[type="email"], .payment-form-row button { min-height: 50px; }
+}
