@@ -157,7 +157,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <body>
 
 <main class="site-shell">
-<header class="site-header"><a class="brand" href="index.php" aria-label="Weton Jawa, kembali ke halaman utama"><span class="brand-mark"><span>W</span></span><span>Weton Jawa</span></a><nav class="site-nav" aria-label="Navigasi utama"><a href="#hitung-weton" aria-current="page">Home</a><a href="artikel.php">Artikel</a><a href="tentang.php">Tentang</a><a href="kebijakan-privasi.php">Privasi</a><a href="kontak.php">Kontak</a></nav></header>
+<header class="site-header"><a class="brand" href="index.php" aria-label="Weton Jawa, kembali ke halaman utama"><span class="brand-mark"><span>W</span></span><span>Weton Jawa</span></a><nav class="site-nav site-nav-home" aria-label="Navigasi utama"><a href="#hitung-weton" aria-current="page">Home</a><a href="artikel.php">Artikel</a><a href="tentang.php">Tentang</a><a href="kebijakan-privasi.php">Privasi</a><a href="kontak.php">Kontak</a></nav></header>
     <section class="hero">
         <div class="hero-copy">
             <p class="eyebrow">Warisan kalender Jawa</p>
