@@ -4,7 +4,12 @@ session_start();
 require_once __DIR__ . '/../lib/PaymentService.php';
 require_once __DIR__ . '/../lib/LouvinService.php';
 
-function fail_create(string $message): never { http_response_code(422); exit('<!doctype html><meta charset="utf-8"><p>' . htmlspecialchars($message, ENT_QUOTES, 'UTF-8') . '</p><p><a href="../index.php">Kembali ke Weton Online</a></p>'); }
+function fail_create(string $message): never
+{
+    http_response_code(422);
+    $safeMessage = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+    exit('<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Status Pembayaran — Weton Online</title><link rel="stylesheet" href="../assets/css/style.css"></head><body><main class="payment-status-shell"><a class="brand" href="../index.php"><span class="brand-mark"><span>W</span></span><span>Weton Jawa</span></a><section class="payment-status-card" aria-labelledby="payment-status-title"><p class="eyebrow">Pembayaran</p><div class="payment-status-icon" aria-hidden="true">!</div><h1 id="payment-status-title">Pembayaran belum dapat dibuat.</h1><p>' . $safeMessage . '</p><a class="payment-status-link" href="../index.php">Kembali ke Weton Online <span aria-hidden="true">→</span></a></section></main></body></html>');
+}
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); exit('Method Not Allowed'); }
 if (!hash_equals($_SESSION['payment_csrf'] ?? '', (string) ($_POST['csrf'] ?? ''))) fail_create('Permintaan tidak valid. Silakan hitung ulang weton Anda.');
 $email = trim((string) ($_POST['email'] ?? '')); $date = trim((string) ($_POST['birth_date'] ?? '')); $time = trim((string) ($_POST['birth_time'] ?? ''));
