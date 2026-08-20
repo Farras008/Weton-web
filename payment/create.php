@@ -16,7 +16,8 @@ $email = trim((string) ($_POST['email'] ?? '')); $date = trim((string) ($_POST['
 if ($email === '' || strlen($email) > 254 || !filter_var($email, FILTER_VALIDATE_EMAIL)) fail_create('Masukkan alamat email yang valid.');
 try {
     $payment = PaymentService::create($email, $date, $time);
-    $paymentEnabled = filter_var(app_config('PAYMENT_ENABLED', 'true'), FILTER_VALIDATE_BOOLEAN);
+    // Checkout stays bypassed unless payment is explicitly enabled in production config.
+    $paymentEnabled = filter_var(app_config('PAYMENT_ENABLED', 'false'), FILTER_VALIDATE_BOOLEAN);
     if (!$paymentEnabled) {
         PaymentService::markSuccessAndSend($payment['merchant_order_id'], [
             'amount' => $payment['amount'],
