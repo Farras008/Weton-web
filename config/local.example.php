@@ -28,6 +28,8 @@ return [
     ],
     'app' => [
         'url' => 'https://weton.online',
+        // Set true untuk mengaktifkan kembali checkout pembayaran.
+        'payment_enabled' => true,
         // Aktifkan hanya pada config/local.php di hosting production.
         'visitor_counter_enabled' => true,
     ],
