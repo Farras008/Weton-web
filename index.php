@@ -15,6 +15,7 @@ require_once __DIR__ . "/lib/PalSrigati.php";
 require_once __DIR__ . "/lib/WatakBayi.php";
 require_once __DIR__ . "/lib/WatakBayiTanggal.php";
 require_once __DIR__ . "/lib/MarriageCalculator.php";
+require_once __DIR__ . "/lib/DokuCheckoutService.php";
 
 $hari = "";
 $pasaran = "";
@@ -151,6 +152,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6150985802567042" crossorigin="anonymous"></script>
     <link rel="icon" type="image/png" href="/assets/favicon.png">
     <link rel="stylesheet" href="assets/css/style.css?v=<?= urlencode((string) $stylesheetVersion) ?>">
+    <script src="<?= htmlspecialchars(DokuCheckoutService::checkoutScriptUrl(), ENT_QUOTES, 'UTF-8') ?>"></script>
 
 </head>
 
@@ -461,16 +463,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             <section class="full-reading-cta" aria-labelledby="full-reading-title">
                 <p class="eyebrow">Pembacaan lengkap</p>
-                <h3 id="full-reading-title">Ingin membaca makna wetonmu secara lengkap?</h3>
-                <p>Masukkan email untuk menerima hasil lengkap. Pembacaan akan diproses dan dikirim oleh server.</p>
-                <form method="post" action="payment/create.php" class="payment-form">
+                <h3 id="full-reading-title">Buka hasil wetonmu secara lengkap</h3>
+                <p>Selesaikan pembayaran QRIS untuk membuka pembacaan lengkap di halaman ini.</p>
+                <form method="post" action="/api/doku/create-payment" class="payment-form" data-doku-payment-form>
                     <input type="hidden" name="csrf" value="<?= htmlspecialchars($paymentCsrf, ENT_QUOTES, 'UTF-8') ?>">
+                    <input type="hidden" name="product" value="weton_full">
                     <input type="hidden" name="birth_date" value="<?= htmlspecialchars(sprintf('%04d-%02d-%02d', (int) $thn, (int) $bln, (int) $tgl), ENT_QUOTES, 'UTF-8') ?>">
                     <input type="hidden" name="birth_time" value="<?= htmlspecialchars($waktuLahir, ENT_QUOTES, 'UTF-8') ?>">
                     <label for="payment-email">Email</label>
-                    <div class="payment-form-row"><input type="email" id="payment-email" name="email" maxlength="254" autocomplete="email" required placeholder="nama@email.com"><button type="submit">Kirim Hasil ke Email <span class="button-arrow" aria-hidden="true">→</span></button></div>
+                    <div class="payment-form-row"><input type="email" id="payment-email" name="email" maxlength="254" autocomplete="email" required placeholder="nama@email.com"><button type="submit">Buka Hasil Lengkap — Rp5.000 <span class="button-arrow" aria-hidden="true">→</span></button></div>
                 </form>
-                <p class="payment-note">Hasil gratis di atas tetap dapat Anda baca tanpa mengirim email.</p>
+                <p class="payment-note" data-payment-message aria-live="polite">Hasil dasar di atas tetap dapat Anda baca gratis.</p>
             </section>
         </section>
     <?php endif; ?>
@@ -488,6 +491,39 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 </main>
 <footer class="site-footer"><p>© <?= date('Y') ?> Weton Online · Warisan kalender Jawa, hadir dalam bentuk digital.</p><nav aria-label="Navigasi footer"><a href="#hitung-weton">Hitung Weton</a><a href="artikel.php">Artikel</a><a href="tentang.php">Tentang</a><a href="kebijakan-privasi.php">Kebijakan Privasi</a><a href="kontak.php">Kontak</a></nav></footer>
 
+<script>
+(() => {
+    const form = document.querySelector('[data-doku-payment-form]');
+    if (!form) return;
+    const button = form.querySelector('button[type="submit"]');
+    const message = document.querySelector('[data-payment-message]');
+    let pollTimer;
+    const setMessage = (text) => { message.textContent = text; };
+    const stopPolling = () => { if (pollTimer) window.clearInterval(pollTimer); pollTimer = undefined; };
+    const checkPayment = async (invoice) => {
+        const response = await fetch('/api/doku/payment-status?invoice=' + encodeURIComponent(invoice), {credentials: 'same-origin'});
+        if (!response.ok) throw new Error('Status payment tidak dapat diperiksa.');
+        const data = await response.json();
+        if (data.paid) { stopPolling(); window.location.assign('/payment/doku-result.php?invoice=' + encodeURIComponent(invoice)); return; }
+        if (['FAILED', 'EXPIRED'].includes(data.status)) { stopPolling(); button.disabled = false; setMessage('Pembayaran belum diterima. Silakan coba lagi.'); }
+    };
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (typeof window.loadJokulCheckout !== 'function') { setMessage('Checkout belum siap. Silakan muat ulang halaman.'); return; }
+        button.disabled = true; setMessage('Menyiapkan pembayaran QRIS…');
+        try {
+            const body = Object.fromEntries(new FormData(form));
+            const response = await fetch('/api/doku/create-payment', {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json', 'Accept': 'application/json'}, body: JSON.stringify(body)});
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || 'Pembayaran belum dapat dibuat.');
+            window.loadJokulCheckout(data.paymentUrl);
+            setMessage('Selesaikan pembayaran QRIS di jendela DOKU. Kami akan membuka hasil setelah pembayaran diterima.');
+            const started = Date.now();
+            pollTimer = window.setInterval(async () => { try { await checkPayment(data.invoice); if (Date.now() - started > 15 * 60 * 1000) { stopPolling(); button.disabled = false; setMessage('Pembayaran belum diterima. Silakan selesaikan QRIS atau coba lagi.'); } } catch (_) {} }, 2500);
+        } catch (error) { button.disabled = false; setMessage(error.message || 'Pembayaran belum dapat dibuat. Silakan coba lagi.'); }
+    });
+})();
+</script>
 </body>
 
 </html>

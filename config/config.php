@@ -1,35 +1,39 @@
 <?php
+declare(strict_types=1);
 
 /**
- * Reads environment variables first, then config/local.php.
- * local.php supports the nested shared-hosting structure in local.example.php;
- * legacy flat keys remain supported for an existing deployment.
+ * Single configuration source: environment variables.
+ * A local, Git-ignored .env file may populate missing variables for development;
+ * deployment uses the same keys supplied by the hosting environment.
  */
+function load_local_env(): void
+{
+    static $loaded = false;
+    if ($loaded) return;
+    $loaded = true;
+
+    $file = dirname(__DIR__) . '/.env';
+    if (!is_file($file) || !is_readable($file)) return;
+    $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    if ($lines === false) return;
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line === '' || str_starts_with($line, '#') || !str_contains($line, '=')) continue;
+        [$key, $value] = explode('=', $line, 2);
+        $key = trim($key);
+        if (!preg_match('/^[A-Z][A-Z0-9_]*$/', $key) || getenv($key) !== false) continue;
+        $value = trim($value);
+        if (strlen($value) >= 2 && (($value[0] === '"' && $value[-1] === '"') || ($value[0] === "'" && $value[-1] === "'"))) $value = substr($value, 1, -1);
+        putenv($key . '=' . $value);
+        $_ENV[$key] = $value;
+    }
+}
+
 function app_config(string $key, ?string $default = null): ?string
 {
-    static $local = null;
-    if ($local === null) {
-        $file = __DIR__ . '/local.php';
-        $local = is_file($file) ? require $file : [];
-        if (!is_array($local)) throw new RuntimeException('config/local.php harus mengembalikan array konfigurasi.');
-    }
+    load_local_env();
     $value = getenv($key);
-    if ($value !== false && $value !== '') return $value;
-    if (isset($local[$key]) && $local[$key] !== '') return (string) $local[$key];
-
-    $paths = [
-        'DB_HOST' => ['db', 'host'], 'DB_PORT' => ['db', 'port'], 'DB_NAME' => ['db', 'name'],
-        'DB_USER' => ['db', 'user'], 'DB_PASSWORD' => ['db', 'password'],
-        'LOUVIN_BASE_URL' => ['louvin', 'base_url'], 'LOUVIN_API_KEY' => ['louvin', 'api_key'], 'LOUVIN_SLUG' => ['louvin', 'slug'],
-        'MAIL_HOST' => ['mail', 'host'], 'MAIL_PORT' => ['mail', 'port'], 'MAIL_USERNAME' => ['mail', 'username'], 'MAIL_PASSWORD' => ['mail', 'password'],
-        'MAIL_ENCRYPTION' => ['mail', 'encryption'], 'MAIL_FROM_ADDRESS' => ['mail', 'from_address'], 'MAIL_FROM_NAME' => ['mail', 'from_name'], 'MAIL_TEST_TOKEN' => ['mail', 'test_token'],
-        'APP_URL' => ['app', 'url'], 'VISITOR_COUNTER_ENABLED' => ['app', 'visitor_counter_enabled'], 'PAYMENT_ENABLED' => ['app', 'payment_enabled'],
-    ];
-    $path = $paths[$key] ?? null;
-    if ($path !== null && isset($local[$path[0]]) && is_array($local[$path[0]]) && array_key_exists($path[1], $local[$path[0]]) && $local[$path[0]][$path[1]] !== '') {
-        return (string) $local[$path[0]][$path[1]];
-    }
-    return $default;
+    return $value !== false && $value !== '' ? $value : $default;
 }
 
 function app_url(string $path): string

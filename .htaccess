@@ -1,5 +1,11 @@
 RewriteEngine On
 
+# DOKU Checkout API endpoints. Keep these public paths stable: they are used in
+# DOKU Dashboard notification settings and the browser checkout flow.
+RewriteRule ^api/doku/create-payment/?$ payment/doku-create.php [L,QSA]
+RewriteRule ^api/doku/notification/?$ payment/doku-notification.php [L,QSA]
+RewriteRule ^api/doku/payment-status/?$ payment/doku-status.php [L,QSA]
+
 # Endpoint sitemap standar; isinya dibangkitkan dari halaman dan artikel aktif.
 RewriteRule ^sitemap\.xml$ sitemap.php [L]
 

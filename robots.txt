@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
-Disallow: /payment/callback.php
-Disallow: /payment/create.php
+Disallow: /api/doku/
+Disallow: /payment/doku-
 Disallow: /payment/retry_emails.php
 Disallow: /payment/test-email.php
 

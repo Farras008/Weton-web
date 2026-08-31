@@ -8,7 +8,7 @@ class VisitorCounter
 
     /**
      * Count submitted calculations unless the deployment explicitly disables it.
-     * This keeps the counter working when config/local.php is not deployed.
+     * This keeps the counter working when the optional environment variable is not set.
      */
     public static function isEnabled(): bool
     {

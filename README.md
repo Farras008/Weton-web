@@ -1,21 +1,12 @@
 # Weton Online
 
-## Pembayaran pembacaan lengkap
+## Pembayaran pembacaan lengkap (DOKU Checkout)
 
-Fitur pembayaran memakai Louvin dan SMTP. Kalkulator Weton serta data Primbon tetap berbasis file PHP; MySQL hanya dipakai untuk transaksi.
+Kalkulator Weton serta data Primbon tetap berbasis file PHP; MySQL dipakai untuk transaksi DOKU Checkout.
 
 1. Buat database MySQL kosong di hosting, lalu impor [database/schema.sql](database/schema.sql).
-   Jika Anda sudah mengimpor schema versi sebelumnya, jalankan sekali [database/migrations/001_add_email_sending_at.sql](database/migrations/001_add_email_sending_at.sql), bukan schema penuh lagi.
-2. Untuk shared hosting, copy [config/local.example.php](config/local.example.php) menjadi `config/local.php`, lalu isi password database Hostinger pada `db.password`. Template telah berisi host `srv1981.hstgr.io`, database `u468044357_weton_db`, user `u468044357_weton`, dan port `3306`. Isi juga Louvin, SMTP, dan URL aplikasi. `config/local.php` sudah diabaikan Git sehingga harus dibuat/upload sendiri di hosting. Atau set key yang sama sebagai environment variables melalui panel hosting (`DB_PASSWORD`, bukan `DB_PASS`). File `.env` tidak dibaca otomatis oleh PHP pada proyek ini; `.env.example` hanya referensi key.
-3. Jalankan `composer install --no-dev --optimize-autoloader` saat deploy untuk memasang PHPMailer. Upload folder `vendor/` bila hosting tidak menjalankan Composer.
-4. Konfigurasi Louvin menggunakan `LOUVIN_BASE_URL=https://api.louvin.dev`, `LOUVIN_SLUG=weton-online`, dan `LOUVIN_API_KEY`. URL callback dan return dikirim otomatis saat transaksi dibuat; pastikan `APP_URL` adalah URL HTTPS publik yang tepat.
+   Jika Anda sudah mengimpor schema versi sebelumnya, jalankan sekali [database/migrations/002_replace_louvin_with_doku_checkout.sql](database/migrations/002_replace_louvin_with_doku_checkout.sql), bukan schema penuh lagi.
+2. Satu-satunya konfigurasi aplikasi adalah environment variables yang dibaca oleh [config/config.php](config/config.php). Untuk local, salin `.env.example` menjadi `.env` lalu isi nilainya; loader kecil di `config/config.php` hanya mengisi environment variable yang belum ada. Untuk deployment, gunakan key yang sama pada panel hosting atau `.env` yang diunggah terpisah dari source code. File `.env` tidak di-commit.
+3. DOKU Checkout memakai `https://api-sandbox.doku.com` otomatis saat `DOKU_ENV=sandbox`. Pastikan `APP_URL` adalah URL HTTPS publik yang tepat. Setelah deployment, set QRIS Notify URL di DOKU ke `https://domain-anda/api/doku/notification`.
 
-`payment/return.php` hanya menampilkan status yang tersimpan di database; status tidak pernah ditentukan dari parameter redirect. Callback memeriksa signature HMAC-SHA256 dan melakukan Check Transaction sebelum mengubah transaksi menjadi sukses.
-
-Untuk mengirim ulang email yang gagal, jalankan dari command line (misalnya cron yang terlindungi):
-
-```sh
-php payment/retry_emails.php
-```
-
-Script retry tidak dapat diakses via web dan hanya memproses transaksi `SUCCESS` yang belum memiliki `email_sent_at`.
+Status frontend dipoll dari database; status tidak pernah ditentukan oleh modal/redirect. Endpoint notification memverifikasi signature HMAC-SHA256 DOKU dari raw body dan secara idempoten menandai transaksi sebagai `PAID`.

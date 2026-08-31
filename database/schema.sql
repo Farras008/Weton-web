@@ -10,8 +10,8 @@ CREATE TABLE payments (
   neptu_pasaran TINYINT UNSIGNED NOT NULL,
   total_neptu TINYINT UNSIGNED NOT NULL,
   amount INT UNSIGNED NOT NULL,
-  status ENUM('PENDING','SUCCESS','FAILED','EXPIRED') NOT NULL DEFAULT 'PENDING',
-  duitku_reference VARCHAR(100) NULL,
+  status ENUM('PENDING','PAID','FAILED','EXPIRED') NOT NULL DEFAULT 'PENDING',
+  doku_transaction_id VARCHAR(100) NULL,
   payment_method VARCHAR(80) NULL,
   payment_message VARCHAR(255) NULL,
   paid_at DATETIME NULL,
@@ -24,5 +24,5 @@ CREATE TABLE payments (
   UNIQUE KEY uq_payments_merchant_order_id (merchant_order_id),
   KEY idx_payments_email (email),
   KEY idx_payments_status (status),
-  KEY idx_payments_duitku_reference (duitku_reference)
+  KEY idx_payments_doku_transaction_id (doku_transaction_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
