@@ -27,6 +27,10 @@ try {
 } catch (Throwable $e) {
     $invoiceForLog = is_array($payment) ? (string) ($payment['merchant_order_id'] ?? '-') : '-';
     error_log('DOKU create payment failed: invoice=' . $invoiceForLog . ' error_type=' . get_class($e));
+    $lastTrace = DokuCheckoutService::lastCreateDiagnostic();
+    if (!is_array($lastTrace) || ($lastTrace['invoice'] ?? null) !== $invoiceForLog) {
+        DokuCheckoutService::recordApplicationFailure($invoiceForLog, is_array($payment) ? (int) ($payment['amount'] ?? 0) : PaymentService::AMOUNT, $e);
+    }
     if (is_array($payment) && isset($payment['merchant_order_id'])) {
         try {
             database()->prepare("UPDATE payments SET status='FAILED', payment_message=? WHERE merchant_order_id=? AND status='PENDING'")

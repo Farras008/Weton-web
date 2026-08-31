@@ -10,6 +10,7 @@ final class DokuCheckoutService
     private string $clientId;
     private string $secretKey;
     private string $apiBase;
+    private const DIAGNOSTIC_FILE = __DIR__ . '/../data/doku-create-diagnostic.json';
 
     public function __construct()
     {
@@ -103,6 +104,29 @@ final class DokuCheckoutService
         return 'HMACSHA256=' . base64_encode(hash_hmac('sha256', $component, $this->secretKey, true));
     }
 
+    /** Returns a credential-free last failure trace for the temporary diagnostic tool. */
+    public static function lastCreateDiagnostic(): ?array
+    {
+        $raw = @file_get_contents(self::DIAGNOSTIC_FILE);
+        $trace = is_string($raw) ? json_decode($raw, true) : null;
+        return is_array($trace) ? $trace : null;
+    }
+
+    /** Records a credential-free failure that happened before DOKU returned HTTP. */
+    public static function recordApplicationFailure(?string $invoice, int $amount, Throwable $error): void
+    {
+        self::writeDiagnosticTrace([
+            'recorded_at_utc' => gmdate('c'),
+            'stage' => 'application_before_doku_response',
+            'invoice' => $invoice ?: '-',
+            'amount' => $amount,
+            'http_status' => null,
+            'curl_error' => '-',
+            'doku_response' => '-',
+            'error_type' => get_class($error),
+        ]);
+    }
+
     private function uuid(): string
     {
         $bytes = bin2hex(random_bytes(16));
@@ -123,6 +147,24 @@ final class DokuCheckoutService
             $error !== '' ? $error : '-',
             $this->safeResponseForLog($response)
         ));
+        self::writeDiagnosticTrace([
+            'recorded_at_utc' => gmdate('c'),
+            'stage' => 'doku_http_response',
+            'invoice' => $invoice,
+            'amount' => $amount,
+            'http_status' => $httpStatus,
+            'curl_error' => $error !== '' ? $error : '-',
+            'doku_response' => $this->safeResponseForLog($response),
+        ]);
+    }
+
+    private static function writeDiagnosticTrace(array $trace): void
+    {
+        $directory = dirname(self::DIAGNOSTIC_FILE);
+        if (is_dir($directory) || @mkdir($directory, 0750, true)) {
+            @file_put_contents(self::DIAGNOSTIC_FILE, json_encode($trace, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), LOCK_EX);
+            @chmod(self::DIAGNOSTIC_FILE, 0600);
+        }
     }
 
     private function safeResponseForLog(string $response): string
@@ -138,6 +180,8 @@ final class DokuCheckoutService
             return $value;
         };
         $json = json_encode($redact($decoded), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-        return substr($json === false ? 'unserializable_json_response' : $json, 0, 2000);
+        $safe = $json === false ? 'unserializable_json_response' : $json;
+        $safe = str_replace([$this->clientId, $this->secretKey], ['[redacted]', '[redacted]'], $safe);
+        return substr($safe, 0, 2000);
     }
 }

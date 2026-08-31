@@ -7,6 +7,7 @@ declare(strict_types=1);
  */
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../lib/DokuCheckoutService.php';
 
 $token = (string) app_config('DOKU_DIAGNOSTIC_TOKEN', '');
 $provided = (string) ($_GET['token'] ?? '');
@@ -62,6 +63,7 @@ $sourceChecks = [];
 foreach ($sourceKeys as $key) {
     foreach (app_config_sources($key) as $source => $present) $sourceChecks["$key via $source"] = $present ? 'YES' : 'NO';
 }
+$lastDokuFailure = DokuCheckoutService::lastCreateDiagnostic();
 ?><!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><title>DOKU diagnostic</title>
 <body style="font-family:system-ui,sans-serif;max-width:760px;margin:40px auto;padding:0 20px;line-height:1.5">
@@ -72,5 +74,8 @@ foreach ($sourceKeys as $key) {
 <?php foreach ($sourceChecks as $label => $value): ?><tr><th style="text-align:left;border-bottom:1px solid #ddd;padding:8px"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></th><td style="border-bottom:1px solid #ddd;padding:8px"><?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?></td></tr><?php endforeach; ?>
 <?php foreach ($routes as $route => $found): ?><tr><th style="text-align:left;border-bottom:1px solid #ddd;padding:8px">.htaccess route <?= htmlspecialchars($route, ENT_QUOTES, 'UTF-8') ?></th><td style="border-bottom:1px solid #ddd;padding:8px"><?= $found ? 'YES' : 'NO' ?></td></tr><?php endforeach; ?>
 </tbody></table>
+<h2>Last DOKU create failure</h2>
+<?php if ($lastDokuFailure === null): ?><p>No captured failure yet. Trigger the payment once, then reload this page.</p>
+<?php else: ?><pre style="padding:12px;overflow:auto;background:#f5f5f5"><?= htmlspecialchars((string) json_encode($lastDokuFailure, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), ENT_QUOTES, 'UTF-8') ?></pre><?php endif; ?>
 <p><strong>Delete this file and remove DOKU_DIAGNOSTIC_TOKEN from the server immediately after diagnosis.</strong></p>
 </body></html>
