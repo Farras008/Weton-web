@@ -89,11 +89,28 @@ final class DokuCheckoutService
             throw new RuntimeException('DOKU belum dapat membuat pembayaran. Silakan coba lagi.');
         }
         $decoded = json_decode($response, true);
-        if (!is_array($decoded) || !is_string($decoded['payment']['url'] ?? null) || $decoded['payment']['url'] === '') {
+        if (!is_array($decoded)) {
             $this->logCreateFailure($payload, $status, 'missing_payment_url', is_string($response) ? $response : '');
             throw new RuntimeException('Respons DOKU tidak lengkap.');
         }
-        return $decoded;
+        try {
+            return $this->extractCheckoutResponse($decoded);
+        } catch (InvalidArgumentException $e) {
+            $this->logCreateFailure($payload, $status, 'missing_payment_url', is_string($response) ? $response : '');
+            throw new RuntimeException('Respons DOKU tidak lengkap.');
+        }
+    }
+
+    /** Extracts DOKU Checkout's documented response object and validates its modal URL. */
+    public function extractCheckoutResponse(array $decoded): array
+    {
+        $checkout = $decoded['response'] ?? null;
+        $url = is_array($checkout) ? ($checkout['payment']['url'] ?? null) : null;
+        $parts = is_string($url) ? parse_url($url) : false;
+        if (!is_array($checkout) || !is_string($url) || $url === '' || !is_array($parts) || strtolower((string) ($parts['scheme'] ?? '')) !== 'https' || empty($parts['host'])) {
+            throw new InvalidArgumentException('DOKU Checkout payment URL tidak valid.');
+        }
+        return $checkout;
     }
 
     /** Builds the documented Non-SNAP DOKU signature; used for requests and verification. */

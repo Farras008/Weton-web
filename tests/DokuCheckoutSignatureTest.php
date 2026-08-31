@@ -18,4 +18,14 @@ $notificationTarget = '/api/doku/notification';
 $notificationSignature = $service->signatureFor($requestId, $timestamp, $notificationTarget, $body);
 if (!$service->verifyNotification($body, ['client-id' => 'MCH-TEST', 'request-id' => $requestId, 'request-timestamp' => $timestamp, 'signature' => $notificationSignature], $notificationTarget)) throw new RuntimeException('DOKU notification signature rejected.');
 if ($service->verifyNotification($body, ['client-id' => 'MCH-TEST', 'request-id' => $requestId, 'request-timestamp' => $timestamp, 'signature' => $createSignature], $notificationTarget)) throw new RuntimeException('Notification accepted a signature for the create-payment target.');
+
+$liveResponse = json_decode('{"message":["SUCCESS"],"response":{"order":{"amount":"5000","invoice_number":"WETON-20260831-C098E999","currency":"IDR","session_id":"16c8cc38114e4d55ac89d0a097b16f43","callback_url":"https://weton.online/payment/doku-result.php?invoice=WETON-20260831-C098E999","auto_redirect":false},"payment":{"payment_method_types":["QRIS"],"payment_due_date":60,"token_id":"16c8cc38114e4d55ac89d0a097b16f4320262231182203856","url":"https://staging.doku.com/checkout-link-v2/16c8cc38114e4d55ac89d0a097b16f4320262231182203856","expired_date":"20260831192203","expired_datetime":"2026-08-31T12:22:03Z"}}}', true, 512, JSON_THROW_ON_ERROR);
+$checkout = $service->extractCheckoutResponse($liveResponse);
+if (($checkout['payment']['url'] ?? null) !== 'https://staging.doku.com/checkout-link-v2/16c8cc38114e4d55ac89d0a097b16f4320262231182203856') throw new RuntimeException('DOKU nested response.payment.url was not extracted.');
+try {
+    $service->extractCheckoutResponse(['response' => ['payment' => ['url' => 'http://example.test/checkout']]]);
+    throw new RuntimeException('Non-HTTPS checkout URL was accepted.');
+} catch (InvalidArgumentException) {
+    // Expected: checkout URLs must be HTTPS.
+}
 echo "DOKU Checkout signature tests passed\n";
