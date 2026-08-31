@@ -42,6 +42,7 @@ $ageYears = null;
 $watakBayi = null;
 $watakBayiTanggal = null;
 $jodohRekomendasi = null;
+$serviceChosen = isset($_POST['service']) || isset($_GET['service']);
 $selectedService = trim((string) ($_POST['service'] ?? $_GET['service'] ?? 'complete'));
 $serviceDefinitions = [
     'character' => ['title' => 'Cek Watak & Karakter', 'description' => 'Kenali karakter, kecenderungan sifat, kekuatan, dan sisi yang perlu dikembangkan berdasarkan wetonmu.', 'icon' => '◒'],
@@ -166,7 +167,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <p class="heritage-note">Sebuah cara sederhana untuk terhubung dengan tradisi.</p>
             <p class="visitor-count">Sudah dicoba oleh <?= htmlspecialchars(number_format($visitorCount, 0, ",", ".")) ?> orang</p>
         </div>
-        <section class="calculator-card" id="hitung-weton" aria-labelledby="form-title">
+        <?php if ($serviceChosen): ?><section class="calculator-card" id="hitung-weton" aria-labelledby="form-title">
             <div class="card-heading"><p class="eyebrow"><?= htmlspecialchars($serviceDefinitions[$selectedService]['title']) ?></p><h2 id="form-title">Mulai pembacaanmu</h2><p>Masukkan tanggal lahir dan waktu kelahiran. Satu data cukup untuk semua pembacaan.</p></div>
             <form method="POST" action="#hasil">
                 <input type="hidden" name="service" value="<?= htmlspecialchars($selectedService, ENT_QUOTES, 'UTF-8') ?>">
@@ -224,18 +225,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </button>
 
             </form>
-        </section>
+        </section><?php endif; ?>
     </section>
 
     <section class="service-dashboard" id="layanan" aria-labelledby="layanan-title">
-        <div class="service-dashboard-heading"><p class="eyebrow">Pilih pembacaan</p><h2 id="layanan-title">Satu weton, lima cara memaknainya.</h2><p>Mulai dari pembacaan yang paling ingin kamu kenali. Hasil ditampilkan fokus, tanpa mengulang data kelahiran.</p></div>
-        <div class="service-grid">
-            <?php foreach ($serviceDefinitions as $key => $service): ?>
-                <a class="service-card<?= $selectedService === $key ? ' is-selected' : '' ?>" href="?service=<?= urlencode($key) ?>#hitung-weton">
-                    <span class="service-card-icon" aria-hidden="true"><?= $service['icon'] ?></span><span class="service-card-number">0<?= array_search($key, array_keys($serviceDefinitions), true) + 1 ?></span>
-                    <h3><?= htmlspecialchars($service['title']) ?></h3><p><?= htmlspecialchars($service['description']) ?></p><span class="service-card-cta">Mulai membaca <span aria-hidden="true">→</span></span>
-                </a>
-            <?php endforeach; ?>
+        <div class="service-dashboard-heading"><p class="eyebrow">Pilihan pembacaan</p><h2 id="layanan-title">Mulai dari cara yang paling ingin kamu pahami.</h2><p>Pilih pembacaan lengkap untuk melihat semuanya, atau masuk lebih dalam ke satu tema tertentu.</p></div>
+        <div class="service-grid service-grid-primary">
+            <a class="service-card service-card-complete<?= $selectedService === 'complete' ? ' is-selected' : '' ?>" href="?service=complete#hitung-weton">
+                <span class="service-badge">Paling lengkap</span><span class="service-card-icon" aria-hidden="true">✦</span><h3>Weton Lengkap</h3><p>Dapatkan pembacaan weton secara menyeluruh dalam satu hasil.</p>
+                <ul><li>Watak &amp; karakter</li><li>Arah mata angin kejayaan</li><li>Fase rezeki dan jodoh</li></ul><span class="service-card-cta">Lihat Weton Lengkap <span aria-hidden="true">→</span></span>
+            </a>
+            <button class="service-card service-card-specific" type="button" aria-expanded="<?= $selectedService !== 'complete' ? 'true' : 'false' ?>" aria-controls="specific-services"><span class="service-card-icon" aria-hidden="true">◈</span><h3>Pembacaan Spesifik</h3><p>Pilih satu hal yang ingin kamu ketahui lebih dalam.</p><span class="service-card-cta">Pilih Pembacaan <span aria-hidden="true">→</span></span></button>
+        </div>
+        <div class="specific-services<?= $selectedService !== 'complete' ? ' is-open' : '' ?>" id="specific-services" <?= $selectedService === 'complete' ? 'hidden' : '' ?>>
+            <div class="specific-services-heading"><p class="eyebrow">Pembacaan spesifik</p><h3>Pilih satu tema</h3></div><div class="service-grid service-grid-specific">
+                <?php foreach (['character', 'direction', 'rezeki', 'jodoh'] as $key): $service = $serviceDefinitions[$key]; ?>
+                    <a class="service-card<?= $selectedService === $key ? ' is-selected' : '' ?>" href="?service=<?= urlencode($key) ?>#hitung-weton"><span class="service-card-icon" aria-hidden="true"><?= $service['icon'] ?></span><h3><?= htmlspecialchars($service['title']) ?></h3><p><?= htmlspecialchars($service['description']) ?></p><span class="service-card-cta">Mulai membaca <span aria-hidden="true">→</span></span></a>
+                <?php endforeach; ?>
+            </div>
         </div>
     </section>
 
@@ -266,16 +273,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <p class="neptu-caption"><strong><?= htmlspecialchars($neptu["weton"]) ?></strong> memiliki total neptu <strong><?= $neptu["totalNeptu"] ?></strong>.</p>
                 </section>
 
-                <section class="kejayaan-card" aria-labelledby="kejayaan-title">
+                <?php if (in_array($selectedService, ['direction', 'complete'], true)): ?><section class="kejayaan-card" aria-labelledby="kejayaan-title">
                     <h3 id="kejayaan-title">Arah kejayaan</h3>
                     <p class="kejayaan-copy">Berdasarkan total neptu <?= $neptu["totalNeptu"] ?>, arah mata angin yang digunakan adalah:</p>
                     <p class="arah-value"><?= htmlspecialchars($arahKejayaan["display"]) ?></p>
                     <div class="arah-chips">
                         <?php foreach ($arahKejayaan["arah"] as $arah): ?><span><?= htmlspecialchars($arah) ?></span><?php endforeach; ?>
                     </div>
-                </section>
+                </section><?php endif; ?>
             </div>
 
+            <?php if (in_array($selectedService, ['character', 'complete'], true)): ?>
             <section class="watak-section" aria-labelledby="watak-title">
                 <div class="watak-intro">
                     <p class="eyebrow">Primbon Jawa</p>
@@ -357,7 +365,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
                 <footer class="watak-bayi-source"><p>Sumber: Primbon Jawa, No. 105, Watak Bayi.</p><p>Sumber: Primbon Jawa, No. 101, Watak bayi menurut tanggal kelahiran.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan sumber Primbon Jawa.</p><p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan penilaian ilmiah mengenai kepribadian seseorang.</p></footer>
             </section>
+            <?php endif; ?>
 
+            <?php if ($selectedService === 'complete'): ?>
             <section class="perbintangan-section" aria-labelledby="perbintangan-title">
                 <div class="perbintangan-intro">
                     <p class="eyebrow">Primbon Jawa No. 117</p>
@@ -384,6 +394,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 </div>
                 <footer class="perbintangan-source"><p>Sumber: Primbon Jawa, No. 117 Perbintangan.</p><p>Bagian “Makna” merupakan penjelasan dalam bahasa modern berdasarkan keterangan sumber Primbon Jawa.</p><p>Perbintangan merupakan bagian dari tradisi Primbon Jawa dan tidak dimaksudkan sebagai kepastian ilmiah mengenai masa depan, kesehatan, atau kehidupan seseorang.</p></footer>
             </section>
+            <?php endif; ?>
+            <?php if (in_array($selectedService, ['rezeki', 'complete'], true)): ?>
             <section class="pal-srigati-section" aria-labelledby="pal-title">
                 <div class="pal-intro">
                     <p class="eyebrow">Primbon Jawa No. 96</p>
@@ -433,7 +445,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <p>Interpretasi ini merupakan bagian dari tradisi Primbon Jawa dan bukan kepastian mengenai kondisi rejeki, kehidupan, atau masa depan seseorang.</p>
                 </footer>
             </section>
+            <?php endif; ?>
 
+            <?php if (in_array($selectedService, ['jodoh', 'complete'], true)): ?>
             <section class="jodoh-section" aria-labelledby="jodoh-title">
                 <div class="jodoh-intro"><p class="eyebrow">Primbon Jawa No. 22 &amp; 23</p><h3 id="jodoh-title">Jodoh &amp; Pernikahan</h3><p>Melihat kemungkinan pasangan berdasarkan jumlah neptu kelahiran menurut perhitungan Primbon Jawa.</p></div>
                 <div class="jodoh-user-neptu">
@@ -471,6 +485,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 <footer class="jodoh-source"><p>Sumber: Primbon Jawa, No. 22 dan No. 23 Perhitungan untuk suami istri (Pernikahan).</p><p>Perhitungan ini merupakan bagian dari tradisi Primbon Jawa dan digunakan sebagai bahan refleksi budaya. Hasil perhitungan bukan kepastian mengenai kecocokan, masa depan, atau keberlangsungan sebuah hubungan.</p></footer>
             </section>
 
+            <?php if ($selectedService === 'complete'): ?>
             <section class="full-reading-cta" aria-labelledby="full-reading-title">
                 <p class="eyebrow">Pembacaan lengkap</p>
                 <h3 id="full-reading-title">Buka hasil wetonmu secara lengkap</h3>
@@ -485,6 +500,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 </form>
                 <p class="payment-note" data-payment-message aria-live="polite">Hasil dasar di atas tetap dapat Anda baca gratis.</p>
             </section>
+            <?php endif; ?>
+            <?php endif; ?>
         </section>
     <?php endif; ?>
     <?php if ($_SERVER['REQUEST_METHOD'] !== 'POST'): ?>
@@ -531,6 +548,20 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             const started = Date.now();
             pollTimer = window.setInterval(async () => { try { await checkPayment(data.invoice); if (Date.now() - started > 15 * 60 * 1000) { stopPolling(); button.disabled = false; setMessage('Pembayaran belum diterima. Silakan selesaikan QRIS atau coba lagi.'); } } catch (_) {} }, 2500);
         } catch (error) { button.disabled = false; setMessage(error.message || 'Pembayaran belum dapat dibuat. Silakan coba lagi.'); }
+    });
+})();
+</script>
+<script>
+(() => {
+    const toggle = document.querySelector('.service-card-specific');
+    const panel = document.getElementById('specific-services');
+    if (!toggle || !panel) return;
+    toggle.addEventListener('click', () => {
+        const open = panel.hidden;
+        panel.hidden = !open;
+        panel.classList.toggle('is-open', open);
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        if (open) panel.scrollIntoView({behavior: 'smooth', block: 'nearest'});
     });
 })();
 </script>
