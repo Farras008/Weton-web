@@ -83,9 +83,15 @@ final class DokuCheckoutService
             ],
         ]);
         $response = curl_exec($curl); $status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE); $error = curl_error($curl); curl_close($curl);
-        if ($response === false || $status < 200 || $status >= 300) throw new RuntimeException('DOKU belum dapat membuat pembayaran' . ($error !== '' ? '.' : '. Silakan coba lagi.'));
+        if ($response === false || $status < 200 || $status >= 300) {
+            $this->logCreateFailure($payload, $status, $error, is_string($response) ? $response : '');
+            throw new RuntimeException('DOKU belum dapat membuat pembayaran. Silakan coba lagi.');
+        }
         $decoded = json_decode($response, true);
-        if (!is_array($decoded) || !is_string($decoded['payment']['url'] ?? null) || $decoded['payment']['url'] === '') throw new RuntimeException('Respons DOKU tidak lengkap.');
+        if (!is_array($decoded) || !is_string($decoded['payment']['url'] ?? null) || $decoded['payment']['url'] === '') {
+            $this->logCreateFailure($payload, $status, 'missing_payment_url', is_string($response) ? $response : '');
+            throw new RuntimeException('Respons DOKU tidak lengkap.');
+        }
         return $decoded;
     }
 
@@ -101,5 +107,37 @@ final class DokuCheckoutService
     {
         $bytes = bin2hex(random_bytes(16));
         return substr($bytes, 0, 8) . '-' . substr($bytes, 8, 4) . '-4' . substr($bytes, 13, 3) . '-8' . substr($bytes, 17, 3) . '-' . substr($bytes, 20);
+    }
+
+    /** Logs diagnostics without credentials, signatures, customer data, or request headers. */
+    private function logCreateFailure(array $payload, int $httpStatus, string $curlError, string $response): void
+    {
+        $invoice = (string) ($payload['order']['invoice_number'] ?? '-');
+        $amount = (int) ($payload['order']['amount'] ?? 0);
+        $error = substr(str_replace(["\r", "\n"], ' ', $curlError), 0, 500);
+        error_log(sprintf(
+            'DOKU create request failed: invoice=%s amount=%d http_status=%d curl_error=%s response=%s',
+            $invoice,
+            $amount,
+            $httpStatus,
+            $error !== '' ? $error : '-',
+            $this->safeResponseForLog($response)
+        ));
+    }
+
+    private function safeResponseForLog(string $response): string
+    {
+        $decoded = json_decode($response, true);
+        if (!is_array($decoded)) return 'non_json_response_sha256=' . hash('sha256', $response);
+        $redact = static function (mixed $value) use (&$redact): mixed {
+            if (!is_array($value)) return $value;
+            foreach ($value as $key => $item) {
+                if (preg_match('/secret|signature|authorization|api.?key|client.?id|email|phone/i', (string) $key)) $value[$key] = '[redacted]';
+                else $value[$key] = $redact($item);
+            }
+            return $value;
+        };
+        $json = json_encode($redact($decoded), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        return substr($json === false ? 'unserializable_json_response' : $json, 0, 2000);
     }
 }

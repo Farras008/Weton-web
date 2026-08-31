@@ -25,10 +25,15 @@ try {
     $_SESSION['doku_orders'][$payment['merchant_order_id']] = true;
     echo json_encode(['success' => true, 'invoice' => $payment['merchant_order_id'], 'paymentUrl' => $dokuPayment['url']]);
 } catch (Throwable $e) {
-    error_log('DOKU create payment error: ' . $e->getMessage());
+    $invoiceForLog = is_array($payment) ? (string) ($payment['merchant_order_id'] ?? '-') : '-';
+    error_log('DOKU create payment failed: invoice=' . $invoiceForLog . ' error_type=' . get_class($e));
     if (is_array($payment) && isset($payment['merchant_order_id'])) {
-        database()->prepare("UPDATE payments SET status='FAILED', payment_message=? WHERE merchant_order_id=? AND status='PENDING'")
-            ->execute(['Pembayaran belum dapat dibuat', $payment['merchant_order_id']]);
+        try {
+            database()->prepare("UPDATE payments SET status='FAILED', payment_message=? WHERE merchant_order_id=? AND status='PENDING'")
+                ->execute(['Pembayaran belum dapat dibuat', $payment['merchant_order_id']]);
+        } catch (Throwable $updateError) {
+            error_log('DOKU create failure status update failed: invoice=' . $invoiceForLog . ' error_type=' . get_class($updateError));
+        }
     }
     http_response_code(502); echo json_encode(['success' => false, 'message' => 'Pembayaran belum dapat dibuat. Silakan coba lagi.']);
 }

@@ -6,16 +6,16 @@ declare(strict_types=1);
  * A local, Git-ignored .env file may populate missing variables for development;
  * deployment uses the same keys supplied by the hosting environment.
  */
-function load_local_env(): void
+function load_local_env(): array
 {
-    static $loaded = false;
-    if ($loaded) return;
-    $loaded = true;
+    static $variables = null;
+    if (is_array($variables)) return $variables;
+    $variables = [];
 
     $file = dirname(__DIR__) . '/.env';
-    if (!is_file($file) || !is_readable($file)) return;
+    if (!is_file($file) || !is_readable($file)) return $variables;
     $lines = file($file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    if ($lines === false) return;
+    if ($lines === false) return $variables;
     foreach ($lines as $line) {
         $line = trim($line);
         if ($line === '' || str_starts_with($line, '#') || !str_contains($line, '=')) continue;
@@ -24,16 +24,19 @@ function load_local_env(): void
         if (!preg_match('/^[A-Z][A-Z0-9_]*$/', $key) || getenv($key) !== false) continue;
         $value = trim($value);
         if (strlen($value) >= 2 && (($value[0] === '"' && $value[-1] === '"') || ($value[0] === "'" && $value[-1] === "'"))) $value = substr($value, 1, -1);
-        putenv($key . '=' . $value);
+        if (function_exists('putenv')) putenv($key . '=' . $value);
         $_ENV[$key] = $value;
+        $variables[$key] = $value;
     }
+    return $variables;
 }
 
 function app_config(string $key, ?string $default = null): ?string
 {
-    load_local_env();
+    $local = load_local_env();
     $value = getenv($key);
-    return $value !== false && $value !== '' ? $value : $default;
+    if ($value !== false && $value !== '') return $value;
+    return $local[$key] ?? $default;
 }
 
 function app_url(string $path): string
