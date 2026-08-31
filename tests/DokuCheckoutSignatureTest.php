@@ -37,6 +37,29 @@ if ($databaseException->operation !== 'payments_insert_pending' || $databaseExce
     throw new RuntimeException('PDO diagnostic metadata was not preserved.');
 }
 
+$insertUnknownColumn = new PDOException("SQLSTATE[42S22]: Column not found: 1054 Unknown column 'new_column' in 'field list'");
+$insertUnknownColumn->errorInfo = ['42S22', 1054, $insertUnknownColumn->getMessage()];
+$insertFailure = new PaymentDatabaseException('payments_insert_pending', $insertUnknownColumn);
+$wrappedInsertFailure = new RuntimeException('Application wrapper.', 0, $insertFailure);
+DokuCheckoutService::recordApplicationFailure('-', PaymentService::AMOUNT, $wrappedInsertFailure);
+$insertTrace = DokuCheckoutService::lastCreateDiagnostic();
+if (($insertTrace['database_operation'] ?? null) !== 'payments_insert_pending'
+    || ($insertTrace['sqlstate'] ?? null) !== '42S22'
+    || ($insertTrace['pdo_driver_code'] ?? null) !== 1054
+    || ($insertTrace['pdo_message'] ?? null) !== "Unknown column 'new_column' in field list") {
+    throw new RuntimeException('payments_insert_pending PDO metadata was not retained in the application trace.');
+}
+
+$afterDoku = new PDOException("SQLSTATE[42S22]: Column not found: 1054 Unknown column 'reference' in 'field list'");
+$afterDoku->errorInfo = ['42S22', 1054, $afterDoku->getMessage()];
+DokuCheckoutService::recordApplicationFailure('WETON-TEST-AFTER', PaymentService::AMOUNT, new PaymentDatabaseException('mark_invoice_created', $afterDoku));
+$afterTrace = DokuCheckoutService::lastCreateDiagnostic();
+if (($afterTrace['stage'] ?? null) !== 'application_after_doku_response'
+    || ($afterTrace['database_operation'] ?? null) !== 'mark_invoice_created'
+    || ($afterTrace['pdo_message'] ?? null) !== "Unknown column 'reference' in field list") {
+    throw new RuntimeException('Post-DOKU database failure was not labelled accurately.');
+}
+
 $traceMethod = new ReflectionMethod(DokuCheckoutService::class, 'safePdoMessage');
 $unknownColumn = new PDOException("SQLSTATE[42S22]: Column not found: 1054 Unknown column 'legacy_provider_reference' in 'field list'");
 if ($traceMethod->invoke(null, $unknownColumn) !== "Unknown column 'legacy_provider_reference' in field list") {

@@ -73,6 +73,7 @@ final class DokuCheckoutService
         $body = json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
         $requestId = $this->uuid();
         $timestamp = gmdate('Y-m-d\\TH:i:s\\Z');
+        self::writeLifecycleTrace('doku_http_request', $payload);
         $curl = curl_init($this->apiBase . $target);
         curl_setopt_array($curl, [
             CURLOPT_POST => true, CURLOPT_POSTFIELDS => $body, CURLOPT_RETURNTRANSFER => true,
@@ -94,7 +95,9 @@ final class DokuCheckoutService
             throw new RuntimeException('Respons DOKU tidak lengkap.');
         }
         try {
-            return $this->extractCheckoutResponse($decoded);
+            $checkout = $this->extractCheckoutResponse($decoded);
+            self::writeLifecycleTrace('doku_http_response', $payload, $status);
+            return $checkout;
         } catch (InvalidArgumentException $e) {
             $this->logCreateFailure($payload, $status, 'missing_payment_url', is_string($response) ? $response : '');
             throw new RuntimeException('Respons DOKU tidak lengkap.');
@@ -132,9 +135,13 @@ final class DokuCheckoutService
     /** Records a credential-free failure that happened before DOKU returned HTTP. */
     public static function recordApplicationFailure(?string $invoice, int $amount, Throwable $error): void
     {
+        $databaseError = self::findPaymentDatabaseException($error);
+        $operation = $databaseError?->operation;
+        $stage = in_array($operation, ['mark_invoice_created', 'payments_update_after_doku'], true)
+            ? 'application_after_doku_response' : 'application_before_doku_response';
         $trace = [
             'recorded_at_utc' => gmdate('c'),
-            'stage' => 'application_before_doku_response',
+            'stage' => $stage,
             'invoice' => $invoice ?: '-',
             'amount' => $amount,
             'http_status' => null,
@@ -142,12 +149,12 @@ final class DokuCheckoutService
             'doku_response' => '-',
             'error_type' => get_class($error),
         ];
-        if ($error instanceof PaymentDatabaseException) {
+        if ($databaseError instanceof PaymentDatabaseException) {
             $trace['error_type'] = 'PDOException';
-            $trace['database_operation'] = $error->operation;
-            $trace['sqlstate'] = $error->sqlState;
-            $trace['pdo_driver_code'] = $error->driverCode;
-            $trace['pdo_message'] = self::safePdoMessage($error->getPrevious());
+            $trace['database_operation'] = $databaseError->operation;
+            $trace['sqlstate'] = $databaseError->sqlState;
+            $trace['pdo_driver_code'] = $databaseError->driverCode;
+            $trace['pdo_message'] = self::safePdoMessage($databaseError->getPrevious());
         } elseif ($error instanceof PDOException) {
             $info = is_array($error->errorInfo ?? null) ? $error->errorInfo : [];
             $trace['database_operation'] = 'unknown_before_doku_request';
@@ -156,6 +163,43 @@ final class DokuCheckoutService
             $trace['pdo_message'] = self::safePdoMessage($error);
         }
         self::writeDiagnosticTrace($trace);
+    }
+
+    /** Records only lifecycle state and non-sensitive order facts. */
+    private static function writeLifecycleTrace(string $stage, array $payload, ?int $httpStatus = null): void
+    {
+        $order = is_array($payload['order'] ?? null) ? $payload['order'] : [];
+        self::writeDiagnosticTrace([
+            'recorded_at_utc' => gmdate('c'),
+            'stage' => $stage,
+            'invoice' => (string) ($order['invoice_number'] ?? '-'),
+            'amount' => (int) ($order['amount'] ?? 0),
+            'http_status' => $httpStatus,
+            'curl_error' => '-',
+            'doku_response' => $stage === 'doku_http_response' ? 'received' : '-',
+        ]);
+    }
+
+    public static function recordFrontendResponse(string $invoice, int $amount): void
+    {
+        self::writeDiagnosticTrace([
+            'recorded_at_utc' => gmdate('c'), 'stage' => 'response_to_frontend',
+            'invoice' => $invoice, 'amount' => $amount, 'http_status' => 200,
+            'curl_error' => '-', 'doku_response' => 'checkout_url_returned',
+        ]);
+    }
+
+    /** Finds operation-labelled database failures even when another layer wraps them. */
+    private static function findPaymentDatabaseException(Throwable $error): ?PaymentDatabaseException
+    {
+        $current = $error;
+        $seen = [];
+        while ($current !== null && !isset($seen[spl_object_id($current)])) {
+            $seen[spl_object_id($current)] = true;
+            if ($current instanceof PaymentDatabaseException) return $current;
+            $current = $current->getPrevious();
+        }
+        return null;
     }
 
     /**

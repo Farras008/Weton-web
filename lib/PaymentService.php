@@ -47,7 +47,14 @@ final class PaymentService
         $sql = 'SELECT * FROM payments WHERE merchant_order_id = ?' . ($lock ? ' FOR UPDATE' : ''); $s = database()->prepare($sql); $s->execute([$orderId]); return $s->fetch() ?: null;
     }
     public static function markInvoiceCreated(string $orderId, array $invoice): void
-    { database()->prepare('UPDATE payments SET reference=?, doku_transaction_id=?, payment_message=? WHERE merchant_order_id=?')->execute([$invoice['reference'], $invoice['reference'], $invoice['statusMessage'] ?? null, $orderId]); }
+    {
+        try {
+            database()->prepare('UPDATE payments SET reference=?, doku_transaction_id=?, payment_message=? WHERE merchant_order_id=?')
+                ->execute([$invoice['reference'], $invoice['reference'], $invoice['statusMessage'] ?? null, $orderId]);
+        } catch (PDOException $e) {
+            throw new PaymentDatabaseException('mark_invoice_created', $e);
+        }
+    }
     /** Marks a verified DOKU notification as paid. Delivery/email is intentionally outside payment flow. */
     public static function markPaid(string $orderId, array $verified, string $method = ''): void
     {

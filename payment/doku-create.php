@@ -23,12 +23,18 @@ try {
         'statusMessage' => 'DOKU Checkout dibuat',
     ]);
     $_SESSION['doku_orders'][$payment['merchant_order_id']] = true;
+    DokuCheckoutService::recordFrontendResponse($payment['merchant_order_id'], (int) $payment['amount']);
     echo json_encode(['success' => true, 'invoice' => $payment['merchant_order_id'], 'paymentUrl' => $dokuPayment['url']]);
 } catch (Throwable $e) {
     $invoiceForLog = is_array($payment) ? (string) ($payment['merchant_order_id'] ?? '-') : '-';
     error_log('DOKU create payment failed: invoice=' . $invoiceForLog . ' error_type=' . get_class($e));
+    // Preserve a diagnostic already written by the DOKU HTTP layer, but never
+    // let an older application trace hide this request's database metadata.
     $lastTrace = DokuCheckoutService::lastCreateDiagnostic();
-    if (!is_array($lastTrace) || ($lastTrace['invoice'] ?? null) !== $invoiceForLog) {
+    $hasCurrentDokuTrace = is_array($lastTrace)
+        && ($lastTrace['stage'] ?? null) === 'doku_http_response'
+        && ($lastTrace['invoice'] ?? null) === $invoiceForLog;
+    if (!$hasCurrentDokuTrace || $e instanceof PaymentDatabaseException) {
         DokuCheckoutService::recordApplicationFailure($invoiceForLog, is_array($payment) ? (int) ($payment['amount'] ?? 0) : PaymentService::AMOUNT, $e);
     }
     if (is_array($payment) && isset($payment['merchant_order_id'])) {
