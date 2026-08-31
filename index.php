@@ -42,8 +42,8 @@ $ageYears = null;
 $watakBayi = null;
 $watakBayiTanggal = null;
 $jodohRekomendasi = null;
-$serviceChosen = isset($_POST['service']) || isset($_GET['service']);
-$selectedService = trim((string) ($_POST['service'] ?? $_GET['service'] ?? 'complete'));
+$serviceChosen = true;
+$selectedService = trim((string) ($_POST['service'] ?? $_GET['service'] ?? 'character'));
 $serviceDefinitions = [
     'character' => ['title' => 'Cek Watak & Karakter', 'description' => 'Kenali karakter, kecenderungan sifat, kekuatan, dan sisi yang perlu dikembangkan berdasarkan wetonmu.', 'icon' => '◒'],
     'direction' => ['title' => 'Cek Arah Mata Angin Kejayaan', 'description' => 'Temukan arah yang dipercaya membawa peluang, keberuntungan, dan perkembangan terbaik berdasarkan wetonmu.', 'icon' => '✧'],
@@ -51,7 +51,7 @@ $serviceDefinitions = [
     'jodoh' => ['title' => 'Cek Jodoh', 'description' => 'Pelajari kecenderungan kecocokan pasangan dan dinamika hubungan berdasarkan weton.', 'icon' => '♡'],
     'complete' => ['title' => 'Cek Weton Lengkap', 'description' => 'Dapatkan pembacaan weton secara menyeluruh dengan seluruh analisis yang tersedia.', 'icon' => '✦'],
 ];
-if (!isset($serviceDefinitions[$selectedService])) $selectedService = 'complete';
+if (!isset($serviceDefinitions[$selectedService])) $selectedService = 'character';
 $paymentCsrf = $_SESSION['payment_csrf'] ??= bin2hex(random_bytes(32));
 
 $bulanList = [
@@ -163,7 +163,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <p class="eyebrow">Warisan kalender Jawa</p>
             <h1>Temukan <em>makna wetonmu</em></h1>
             <p class="intro">Kenali perpaduan hari dan pasaran Jawa yang menyertai perjalanan hidupmu.</p>
-            <div class="hero-links"><a href="#layanan">Pilih pembacaan <span aria-hidden="true">↓</span></a><a href="#panduan">Jelajahi panduan <span aria-hidden="true">→</span></a></div>
+            <div class="hero-links reading-picker" aria-label="Pilih pembacaan weton"><span class="reading-picker-label">Pilih pembacaan</span><div class="reading-choice-list"><a class="reading-choice reading-choice-complete<?= $selectedService === 'complete' ? ' is-active' : '' ?>" href="?service=complete#hitung-weton">Cek Weton Lengkap</a><?php foreach (['character', 'direction', 'rezeki', 'jodoh'] as $key): ?><a class="reading-choice<?= $selectedService === $key ? ' is-active' : '' ?>" href="?service=<?= urlencode($key) ?>#hitung-weton"><?= htmlspecialchars($serviceDefinitions[$key]['title']) ?></a><?php endforeach; ?></div></div>
             <p class="heritage-note">Sebuah cara sederhana untuk terhubung dengan tradisi.</p>
             <p class="visitor-count">Sudah dicoba oleh <?= htmlspecialchars(number_format($visitorCount, 0, ",", ".")) ?> orang</p>
         </div>
@@ -226,24 +226,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             </form>
         </section><?php endif; ?>
-    </section>
-
-    <section class="service-dashboard" id="layanan" aria-labelledby="layanan-title">
-        <div class="service-dashboard-heading"><p class="eyebrow">Pilihan pembacaan</p><h2 id="layanan-title">Mulai dari cara yang paling ingin kamu pahami.</h2><p>Pilih pembacaan lengkap untuk melihat semuanya, atau masuk lebih dalam ke satu tema tertentu.</p></div>
-        <div class="service-grid service-grid-primary">
-            <a class="service-card service-card-complete<?= $selectedService === 'complete' ? ' is-selected' : '' ?>" href="?service=complete#hitung-weton">
-                <span class="service-badge">Paling lengkap</span><span class="service-card-icon" aria-hidden="true">✦</span><h3>Weton Lengkap</h3><p>Dapatkan pembacaan weton secara menyeluruh dalam satu hasil.</p>
-                <ul><li>Watak &amp; karakter</li><li>Arah mata angin kejayaan</li><li>Fase rezeki dan jodoh</li></ul><span class="service-card-cta">Lihat Weton Lengkap <span aria-hidden="true">→</span></span>
-            </a>
-            <button class="service-card service-card-specific" type="button" aria-expanded="<?= $selectedService !== 'complete' ? 'true' : 'false' ?>" aria-controls="specific-services"><span class="service-card-icon" aria-hidden="true">◈</span><h3>Pembacaan Spesifik</h3><p>Pilih satu hal yang ingin kamu ketahui lebih dalam.</p><span class="service-card-cta">Pilih Pembacaan <span aria-hidden="true">→</span></span></button>
-        </div>
-        <div class="specific-services<?= $selectedService !== 'complete' ? ' is-open' : '' ?>" id="specific-services" <?= $selectedService === 'complete' ? 'hidden' : '' ?>>
-            <div class="specific-services-heading"><p class="eyebrow">Pembacaan spesifik</p><h3>Pilih satu tema</h3></div><div class="service-grid service-grid-specific">
-                <?php foreach (['character', 'direction', 'rezeki', 'jodoh'] as $key): $service = $serviceDefinitions[$key]; ?>
-                    <a class="service-card<?= $selectedService === $key ? ' is-selected' : '' ?>" href="?service=<?= urlencode($key) ?>#hitung-weton"><span class="service-card-icon" aria-hidden="true"><?= $service['icon'] ?></span><h3><?= htmlspecialchars($service['title']) ?></h3><p><?= htmlspecialchars($service['description']) ?></p><span class="service-card-cta">Mulai membaca <span aria-hidden="true">→</span></span></a>
-                <?php endforeach; ?>
-            </div>
-        </div>
     </section>
 
     <?php if ($error !== ""): ?>
