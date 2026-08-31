@@ -132,7 +132,7 @@ final class DokuCheckoutService
     /** Records a credential-free failure that happened before DOKU returned HTTP. */
     public static function recordApplicationFailure(?string $invoice, int $amount, Throwable $error): void
     {
-        self::writeDiagnosticTrace([
+        $trace = [
             'recorded_at_utc' => gmdate('c'),
             'stage' => 'application_before_doku_response',
             'invoice' => $invoice ?: '-',
@@ -141,7 +141,19 @@ final class DokuCheckoutService
             'curl_error' => '-',
             'doku_response' => '-',
             'error_type' => get_class($error),
-        ]);
+        ];
+        if ($error instanceof PaymentDatabaseException) {
+            $trace['error_type'] = 'PDOException';
+            $trace['database_operation'] = $error->operation;
+            $trace['sqlstate'] = $error->sqlState;
+            $trace['pdo_driver_code'] = $error->driverCode;
+        } elseif ($error instanceof PDOException) {
+            $info = is_array($error->errorInfo ?? null) ? $error->errorInfo : [];
+            $trace['database_operation'] = 'unknown_before_doku_request';
+            $trace['sqlstate'] = (string) ($info[0] ?? $error->getCode() ?? 'unknown');
+            $trace['pdo_driver_code'] = isset($info[1]) && is_numeric($info[1]) ? (int) $info[1] : null;
+        }
+        self::writeDiagnosticTrace($trace);
     }
 
     private function uuid(): string

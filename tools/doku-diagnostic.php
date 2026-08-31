@@ -39,7 +39,35 @@ if (is_readable($htaccess)) {
 }
 
 $databaseStatus = 'NO';
-try { database(); $databaseStatus = 'YES'; } catch (Throwable) { $databaseStatus = 'NO'; }
+$paymentsSchemaStatus = 'NOT CHECKED';
+$paymentsSchema = [];
+try {
+    $pdo = database();
+    $databaseStatus = 'YES';
+} catch (Throwable) {
+    $databaseStatus = 'NO';
+}
+
+if ($databaseStatus === 'YES') {
+    try {
+    $columns = $pdo->query('SHOW COLUMNS FROM payments')->fetchAll(PDO::FETCH_ASSOC);
+    $columnMap = [];
+    foreach ($columns as $column) $columnMap[(string) ($column['Field'] ?? '')] = (string) ($column['Type'] ?? '');
+    foreach (['merchant_order_id', 'email', 'birth_date', 'birth_time', 'weton', 'neptu_hari', 'neptu_pasaran', 'total_neptu', 'amount', 'status', 'reference', 'doku_transaction_id', 'payment_message'] as $column) {
+        $paymentsSchema['payments.' . $column . ' exists'] = isset($columnMap[$column]) ? 'YES' : 'NO';
+    }
+    $statusType = strtoupper($columnMap['status'] ?? '');
+    $paymentsSchema['payments.status supports PENDING'] = str_contains($statusType, "'PENDING'") ? 'YES' : 'NO';
+    $paymentsSchema['payments.status supports PAID'] = isset($columnMap['status']) && str_contains(strtoupper($columnMap['status']), "'PAID'") ? 'YES' : 'NO';
+    $indexes = $pdo->query('SHOW INDEX FROM payments')->fetchAll(PDO::FETCH_ASSOC);
+    $indexNames = [];
+    foreach ($indexes as $index) $indexNames[(string) ($index['Key_name'] ?? '')] = true;
+    $paymentsSchema['payments unique invoice index exists'] = isset($indexNames['uq_payments_merchant_order_id']) ? 'YES' : 'NO';
+        $paymentsSchemaStatus = 'YES';
+    } catch (Throwable) {
+        $paymentsSchemaStatus = 'NO';
+    }
+}
 
 $checks = [
     'PHP version' => PHP_VERSION,
@@ -50,6 +78,7 @@ $checks = [
     'APP_URL configured' => $appUrl !== '' ? 'YES' : 'NO',
     'APP_URL matches current host' => $appUrlMatches ? 'YES' : 'NO',
     'DB connection' => $databaseStatus,
+    'payments schema inspection' => $paymentsSchemaStatus,
     'DOKU_ENV configured' => app_config('DOKU_ENV', '') !== '' ? 'YES' : 'NO',
     'DOKU_ENV is sandbox' => strtolower((string) app_config('DOKU_ENV', '')) === 'sandbox' ? 'YES' : 'NO',
     'DOKU_CLIENT_ID configured' => app_config('DOKU_CLIENT_ID', '') !== '' ? 'YES' : 'NO',
@@ -72,6 +101,7 @@ $lastDokuFailure = DokuCheckoutService::lastCreateDiagnostic();
 <table style="border-collapse:collapse;width:100%"><tbody>
 <?php foreach ($checks as $label => $value): ?><tr><th style="text-align:left;border-bottom:1px solid #ddd;padding:8px"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></th><td style="border-bottom:1px solid #ddd;padding:8px"><?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?></td></tr><?php endforeach; ?>
 <?php foreach ($sourceChecks as $label => $value): ?><tr><th style="text-align:left;border-bottom:1px solid #ddd;padding:8px"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></th><td style="border-bottom:1px solid #ddd;padding:8px"><?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?></td></tr><?php endforeach; ?>
+<?php foreach ($paymentsSchema as $label => $value): ?><tr><th style="text-align:left;border-bottom:1px solid #ddd;padding:8px"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></th><td style="border-bottom:1px solid #ddd;padding:8px"><?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?></td></tr><?php endforeach; ?>
 <?php foreach ($routes as $route => $found): ?><tr><th style="text-align:left;border-bottom:1px solid #ddd;padding:8px">.htaccess route <?= htmlspecialchars($route, ENT_QUOTES, 'UTF-8') ?></th><td style="border-bottom:1px solid #ddd;padding:8px"><?= $found ? 'YES' : 'NO' ?></td></tr><?php endforeach; ?>
 </tbody></table>
 <h2>Last DOKU create failure</h2>

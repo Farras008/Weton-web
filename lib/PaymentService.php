@@ -3,6 +3,22 @@ require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/FullWetonReport.php';
 require_once __DIR__ . '/EmailService.php';
 
+final class PaymentDatabaseException extends RuntimeException
+{
+    public readonly string $operation;
+    public readonly string $sqlState;
+    public readonly ?int $driverCode;
+
+    public function __construct(string $operation, PDOException $previous)
+    {
+        $info = is_array($previous->errorInfo ?? null) ? $previous->errorInfo : [];
+        $this->operation = $operation;
+        $this->sqlState = (string) ($info[0] ?? $previous->getCode() ?? 'unknown');
+        $this->driverCode = isset($info[1]) && is_numeric($info[1]) ? (int) $info[1] : null;
+        parent::__construct('Database operation failed.', 0, $previous);
+    }
+}
+
 final class PaymentService
 {
     public const AMOUNT = 5000;
@@ -13,7 +29,18 @@ final class PaymentService
         $data = ['merchant_order_id' => $orderId, 'email' => $email, 'birth_date' => $birthDate, 'birth_time' => $birthTime,
             'weton' => $n['weton'], 'neptu_hari' => $n['neptuHari'], 'neptu_pasaran' => $n['neptuPasaran'], 'total_neptu' => $n['totalNeptu'], 'amount' => self::AMOUNT];
         $sql = 'INSERT INTO payments (merchant_order_id,email,birth_date,birth_time,weton,neptu_hari,neptu_pasaran,total_neptu,amount,status) VALUES (:merchant_order_id,:email,:birth_date,:birth_time,:weton,:neptu_hari,:neptu_pasaran,:total_neptu,:amount,\'PENDING\')';
-        database()->prepare($sql)->execute($data); return $data;
+        try {
+            $pdo = database();
+        } catch (PDOException $e) {
+            throw new PaymentDatabaseException('database_connect', $e);
+        }
+        try {
+            $statement = $pdo->prepare($sql);
+            $statement->execute($data);
+        } catch (PDOException $e) {
+            throw new PaymentDatabaseException('payments_insert_pending', $e);
+        }
+        return $data;
     }
     public static function findByOrderId(string $orderId, bool $lock = false): ?array
     {

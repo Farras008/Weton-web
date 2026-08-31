@@ -2,6 +2,7 @@
 declare(strict_types=1);
 putenv('DOKU_ENV=sandbox'); putenv('DOKU_CLIENT_ID=MCH-TEST'); putenv('DOKU_SECRET_KEY=secret-test');
 require_once __DIR__ . '/../lib/DokuCheckoutService.php';
+require_once __DIR__ . '/../lib/PaymentService.php';
 
 $body = '{"order":{"amount":5000,"invoice_number":"WETON-20260831-ABC123"}}';
 $service = new DokuCheckoutService();
@@ -27,5 +28,12 @@ try {
     throw new RuntimeException('Non-HTTPS checkout URL was accepted.');
 } catch (InvalidArgumentException) {
     // Expected: checkout URLs must be HTTPS.
+}
+
+$pdoException = new PDOException('Table missing');
+$pdoException->errorInfo = ['42S02', 1146, 'Table missing'];
+$databaseException = new PaymentDatabaseException('payments_insert_pending', $pdoException);
+if ($databaseException->operation !== 'payments_insert_pending' || $databaseException->sqlState !== '42S02' || $databaseException->driverCode !== 1146) {
+    throw new RuntimeException('PDO diagnostic metadata was not preserved.');
 }
 echo "DOKU Checkout signature tests passed\n";
