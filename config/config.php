@@ -21,7 +21,7 @@ function load_local_env(): array
         if ($line === '' || str_starts_with($line, '#') || !str_contains($line, '=')) continue;
         [$key, $value] = explode('=', $line, 2);
         $key = trim($key);
-        if (!preg_match('/^[A-Z][A-Z0-9_]*$/', $key) || getenv($key) !== false) continue;
+        if (!preg_match('/^[A-Z][A-Z0-9_]*$/', $key) || app_hosted_env_value($key) !== null) continue;
         $value = trim($value);
         if (strlen($value) >= 2 && (($value[0] === '"' && $value[-1] === '"') || ($value[0] === "'" && $value[-1] === "'"))) $value = substr($value, 1, -1);
         if (function_exists('putenv')) putenv($key . '=' . $value);
@@ -31,11 +31,33 @@ function load_local_env(): array
     return $variables;
 }
 
-function app_config(string $key, ?string $default = null): ?string
+/** Reads the standard sources used by PHP-FPM/shared hosting, without exposing values. */
+function app_hosted_env_value(string $key): ?string
 {
-    $local = load_local_env();
     $value = getenv($key);
     if ($value !== false && $value !== '') return $value;
+    foreach ([&$_ENV, &$_SERVER] as $source) {
+        if (array_key_exists($key, $source) && is_scalar($source[$key]) && (string) $source[$key] !== '') return (string) $source[$key];
+    }
+    return null;
+}
+
+/** Returns only presence flags, suitable for diagnostics without leaking values. */
+function app_config_sources(string $key): array
+{
+    $getenv = getenv($key);
+    return [
+        'getenv' => $getenv !== false && $getenv !== '',
+        '_ENV' => array_key_exists($key, $_ENV) && is_scalar($_ENV[$key]) && (string) $_ENV[$key] !== '',
+        '_SERVER' => array_key_exists($key, $_SERVER) && is_scalar($_SERVER[$key]) && (string) $_SERVER[$key] !== '',
+    ];
+}
+
+function app_config(string $key, ?string $default = null): ?string
+{
+    $value = app_hosted_env_value($key);
+    if ($value !== null) return $value;
+    $local = load_local_env();
     return $local[$key] ?? $default;
 }
 

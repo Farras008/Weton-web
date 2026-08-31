@@ -57,6 +57,11 @@ $checks = [
     'DB_NAME configured' => app_config('DB_NAME', '') !== '' ? 'YES' : 'NO',
     'DB_USER configured' => app_config('DB_USER', '') !== '' ? 'YES' : 'NO',
 ];
+$sourceKeys = ['DOKU_DIAGNOSTIC_TOKEN', 'DOKU_ENV', 'DOKU_CLIENT_ID', 'DOKU_SECRET_KEY', 'APP_URL', 'DB_HOST', 'DB_NAME', 'DB_USER'];
+$sourceChecks = [];
+foreach ($sourceKeys as $key) {
+    foreach (app_config_sources($key) as $source => $present) $sourceChecks["$key via $source"] = $present ? 'YES' : 'NO';
+}
 ?><!doctype html>
 <html lang="en"><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><title>DOKU diagnostic</title>
 <body style="font-family:system-ui,sans-serif;max-width:760px;margin:40px auto;padding:0 20px;line-height:1.5">
@@ -64,6 +69,7 @@ $checks = [
 <p>This page does not create a payment and never displays credential values.</p>
 <table style="border-collapse:collapse;width:100%"><tbody>
 <?php foreach ($checks as $label => $value): ?><tr><th style="text-align:left;border-bottom:1px solid #ddd;padding:8px"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></th><td style="border-bottom:1px solid #ddd;padding:8px"><?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?></td></tr><?php endforeach; ?>
+<?php foreach ($sourceChecks as $label => $value): ?><tr><th style="text-align:left;border-bottom:1px solid #ddd;padding:8px"><?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?></th><td style="border-bottom:1px solid #ddd;padding:8px"><?= htmlspecialchars($value, ENT_QUOTES, 'UTF-8') ?></td></tr><?php endforeach; ?>
 <?php foreach ($routes as $route => $found): ?><tr><th style="text-align:left;border-bottom:1px solid #ddd;padding:8px">.htaccess route <?= htmlspecialchars($route, ENT_QUOTES, 'UTF-8') ?></th><td style="border-bottom:1px solid #ddd;padding:8px"><?= $found ? 'YES' : 'NO' ?></td></tr><?php endforeach; ?>
 </tbody></table>
 <p><strong>Delete this file and remove DOKU_DIAGNOSTIC_TOKEN from the server immediately after diagnosis.</strong></p>
