@@ -15,6 +15,7 @@ require_once __DIR__ . "/lib/PalSrigati.php";
 require_once __DIR__ . "/lib/WatakBayi.php";
 require_once __DIR__ . "/lib/WatakBayiTanggal.php";
 require_once __DIR__ . "/lib/MarriageCalculator.php";
+require_once __DIR__ . "/lib/ServiceReading.php";
 require_once __DIR__ . "/lib/DokuCheckoutService.php";
 
 $hari = "";
@@ -41,6 +42,15 @@ $ageYears = null;
 $watakBayi = null;
 $watakBayiTanggal = null;
 $jodohRekomendasi = null;
+$selectedService = trim((string) ($_POST['service'] ?? $_GET['service'] ?? 'complete'));
+$serviceDefinitions = [
+    'character' => ['title' => 'Cek Watak & Karakter', 'description' => 'Kenali karakter, kecenderungan sifat, kekuatan, dan sisi yang perlu dikembangkan berdasarkan wetonmu.', 'icon' => '◒'],
+    'direction' => ['title' => 'Cek Arah Mata Angin Kejayaan', 'description' => 'Temukan arah yang dipercaya membawa peluang, keberuntungan, dan perkembangan terbaik berdasarkan wetonmu.', 'icon' => '✧'],
+    'rezeki' => ['title' => 'Cek Fase Rezeki', 'description' => 'Lihat gambaran fase perjalanan rezeki dan periode kehidupan yang memiliki karakter berbeda.', 'icon' => '◈'],
+    'jodoh' => ['title' => 'Cek Jodoh', 'description' => 'Pelajari kecenderungan kecocokan pasangan dan dinamika hubungan berdasarkan weton.', 'icon' => '♡'],
+    'complete' => ['title' => 'Cek Weton Lengkap', 'description' => 'Dapatkan pembacaan weton secara menyeluruh dengan seluruh analisis yang tersedia.', 'icon' => '✦'],
+];
+if (!isset($serviceDefinitions[$selectedService])) $selectedService = 'complete';
 $paymentCsrf = $_SESSION['payment_csrf'] ??= bin2hex(random_bytes(32));
 
 $bulanList = [
@@ -81,27 +91,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             $error = "Tanggal tidak valid. Periksa kembali tanggal, bulan, dan tahun Anda.";
         } else {
             $tanggal = sprintf("%04d-%02d-%02d", $thn, $bln, $tgl);
-            $tanggalWeton = new DateTimeImmutable($tanggal);
+            $dob = new DateTimeImmutable($tanggal);
             $bergantiHari = $waktuLahir === "malam";
-
-            if ($bergantiHari) {
-                $tanggalWeton = $tanggalWeton->modify("+1 day");
-            }
-
-            $tanggalPerhitungan = $tanggalWeton->format("Y-m-d");
-            $hari = Hari::get($tanggalPerhitungan);
-            $pasaran = Pasaran::get($tanggalPerhitungan);
-            $neptu = hitungNeptu($hari, $pasaran);
-            $arahKejayaan = ArahKejayaanData::untukNeptu($neptu["totalNeptu"]);
-            $watakHari = WatakData::untukHari($hari);
-            $watakPasaran = WatakData::untukPasaran($pasaran);
-            $perbintangan = PerbintanganData::untukNeptu($neptu["totalNeptu"]);
-            $watakKelahiran = WatakKelahiranData::untukWeton($hari, $pasaran);
+            $reading = ServiceReading::calculate($dob, $waktuLahir);
+            $tanggalWeton = $reading['tanggalWeton']; $hari = $reading['hari']; $pasaran = $reading['pasaran'];
+            $neptu = $reading['neptu']; $arahKejayaan = $reading['arahKejayaan']; $watakHari = $reading['watakHari'];
+            $watakPasaran = $reading['watakPasaran']; $perbintangan = $reading['perbintangan']; $watakKelahiran = $reading['watakKelahiran'];
             $tanggalWetonTampil = $tanggalWeton->format("j") . " " . $bulanList[(int) $tanggalWeton->format("n")] . " " . $tanggalWeton->format("Y");
 
             // Pal Srigati: compute using original date of birth (not shifted by malam)
                 try {
-                $dob = new DateTimeImmutable($tanggal);
                 $ageInterval = $dob->diff(new DateTimeImmutable('now'));
                 $ageYears = $ageInterval->y;
                 $palPeriodKey = PalSrigati::getPeriodKeyForDateOfBirth($dob);
@@ -115,9 +114,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
                     // Watak Bayi (No. 105)
                     if (isset(WatakBayi::WATAK_BAYI[$neptu["totalNeptu"]])) {
-            $watakBayi = WatakBayi::get($neptu["totalNeptu"]);
-            $watakBayiTanggal = WatakBayiTanggal::get($tgl);
-            $jodohRekomendasi = MarriageCalculator::getPartnerRecommendations($neptu["totalNeptu"]);
+            $watakBayi = $reading['watakBayi']; $watakBayiTanggal = $reading['watakBayiTanggal']; $jodohRekomendasi = $reading['jodoh'];
                     } else {
                         $watakBayi = null;
                     }
@@ -146,8 +143,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Weton Online</title>
-    <meta name="description" content="Hitung weton Jawa, neptu, watak kelahiran, arah kejayaan, dan pembacaan Primbon Jawa secara online.">
+    <title><?= htmlspecialchars($serviceDefinitions[$selectedService]['title']) ?> | Weton Online</title>
+    <meta name="description" content="<?= htmlspecialchars($serviceDefinitions[$selectedService]['description']) ?>">
     <link rel="canonical" href="https://weton.online/">
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6150985802567042" crossorigin="anonymous"></script>
     <link rel="icon" type="image/png" href="/assets/favicon.png">
@@ -165,13 +162,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <p class="eyebrow">Warisan kalender Jawa</p>
             <h1>Temukan <em>makna wetonmu</em></h1>
             <p class="intro">Kenali perpaduan hari dan pasaran Jawa yang menyertai perjalanan hidupmu.</p>
-            <div class="hero-links"><a href="#hitung-weton">Hitung weton <span aria-hidden="true">↓</span></a><a href="#panduan">Jelajahi panduan <span aria-hidden="true">→</span></a></div>
+            <div class="hero-links"><a href="#layanan">Pilih pembacaan <span aria-hidden="true">↓</span></a><a href="#panduan">Jelajahi panduan <span aria-hidden="true">→</span></a></div>
             <p class="heritage-note">Sebuah cara sederhana untuk terhubung dengan tradisi.</p>
             <p class="visitor-count">Sudah dicoba oleh <?= htmlspecialchars(number_format($visitorCount, 0, ",", ".")) ?> orang</p>
         </div>
         <section class="calculator-card" id="hitung-weton" aria-labelledby="form-title">
-            <div class="card-heading"><h2 id="form-title">Hitung weton</h2><p>Masukkan tanggal lahir Anda di bawah ini.</p></div>
+            <div class="card-heading"><p class="eyebrow"><?= htmlspecialchars($serviceDefinitions[$selectedService]['title']) ?></p><h2 id="form-title">Mulai pembacaanmu</h2><p>Masukkan tanggal lahir dan waktu kelahiran. Satu data cukup untuk semua pembacaan.</p></div>
             <form method="POST" action="#hasil">
+                <input type="hidden" name="service" value="<?= htmlspecialchars($selectedService, ENT_QUOTES, 'UTF-8') ?>">
                 <label for="tanggal">Tanggal lahir</label>
                 <div class="tanggal-group">
 
@@ -229,10 +227,22 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         </section>
     </section>
 
+    <section class="service-dashboard" id="layanan" aria-labelledby="layanan-title">
+        <div class="service-dashboard-heading"><p class="eyebrow">Pilih pembacaan</p><h2 id="layanan-title">Satu weton, lima cara memaknainya.</h2><p>Mulai dari pembacaan yang paling ingin kamu kenali. Hasil ditampilkan fokus, tanpa mengulang data kelahiran.</p></div>
+        <div class="service-grid">
+            <?php foreach ($serviceDefinitions as $key => $service): ?>
+                <a class="service-card<?= $selectedService === $key ? ' is-selected' : '' ?>" href="?service=<?= urlencode($key) ?>#hitung-weton">
+                    <span class="service-card-icon" aria-hidden="true"><?= $service['icon'] ?></span><span class="service-card-number">0<?= array_search($key, array_keys($serviceDefinitions), true) + 1 ?></span>
+                    <h3><?= htmlspecialchars($service['title']) ?></h3><p><?= htmlspecialchars($service['description']) ?></p><span class="service-card-cta">Mulai membaca <span aria-hidden="true">→</span></span>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    </section>
+
     <?php if ($error !== ""): ?>
         <div class="error page-error" id="hasil" tabindex="-1"><?= htmlspecialchars($error) ?></div>
     <?php elseif ($neptu !== null): ?>
-        <section class="weton-detail" id="hasil" aria-live="polite" tabindex="-1">
+        <section class="weton-detail service-result-<?= htmlspecialchars($selectedService, ENT_QUOTES, 'UTF-8') ?>" id="hasil" aria-live="polite" tabindex="-1">
             <div class="detail-intro">
                 <p class="eyebrow">Lembaran wetonmu</p>
                 <h2><?= htmlspecialchars($neptu["weton"]) ?></h2>
