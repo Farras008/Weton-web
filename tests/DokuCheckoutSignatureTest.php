@@ -36,4 +36,14 @@ $databaseException = new PaymentDatabaseException('payments_insert_pending', $pd
 if ($databaseException->operation !== 'payments_insert_pending' || $databaseException->sqlState !== '42S02' || $databaseException->driverCode !== 1146) {
     throw new RuntimeException('PDO diagnostic metadata was not preserved.');
 }
+
+$traceMethod = new ReflectionMethod(DokuCheckoutService::class, 'safePdoMessage');
+$unknownColumn = new PDOException("SQLSTATE[42S22]: Column not found: 1054 Unknown column 'legacy_provider_reference' in 'field list'");
+if ($traceMethod->invoke(null, $unknownColumn) !== "Unknown column 'legacy_provider_reference' in field list") {
+    throw new RuntimeException('PDO unknown-column diagnostic message was not safely preserved.');
+}
+$sensitive = new PDOException("Access denied for user 'customer@example.com' using password: secret-key phone=081234567890");
+if ($traceMethod->invoke(null, $sensitive) !== 'PDO error message suppressed for safety.') {
+    throw new RuntimeException('Sensitive PDO details were not suppressed.');
+}
 echo "DOKU Checkout signature tests passed\n";

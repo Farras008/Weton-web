@@ -147,13 +147,34 @@ final class DokuCheckoutService
             $trace['database_operation'] = $error->operation;
             $trace['sqlstate'] = $error->sqlState;
             $trace['pdo_driver_code'] = $error->driverCode;
+            $trace['pdo_message'] = self::safePdoMessage($error->getPrevious());
         } elseif ($error instanceof PDOException) {
             $info = is_array($error->errorInfo ?? null) ? $error->errorInfo : [];
             $trace['database_operation'] = 'unknown_before_doku_request';
             $trace['sqlstate'] = (string) ($info[0] ?? $error->getCode() ?? 'unknown');
             $trace['pdo_driver_code'] = isset($info[1]) && is_numeric($info[1]) ? (int) $info[1] : null;
+            $trace['pdo_message'] = self::safePdoMessage($error);
         }
         self::writeDiagnosticTrace($trace);
+    }
+
+    /**
+     * Retains only schema-safe PDO details. Values, credentials, SQL, and customer
+     * data are deliberately never persisted to the temporary diagnostic trace.
+     */
+    private static function safePdoMessage(?Throwable $error): string
+    {
+        if (!$error instanceof PDOException) return 'PDO error message unavailable.';
+        $message = preg_replace('/\s+/', ' ', $error->getMessage()) ?? '';
+        // Preserve only the identifier from MySQL's schema errors; never retain SQL or values.
+        if (preg_match("/Unknown column\\s+['`\"]?([A-Za-z0-9_.]+)['`\"]?\\s+in\\s+(?:['`\"]?(?:field|where|order|group) list['`\"]?)/i", $message, $match)) {
+            return "Unknown column '" . $match[1] . "' in field list";
+        }
+        if (preg_match("/Table ['`]?([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)?)['`]? doesn't exist/i", $message, $match)) {
+            return "Table '" . $match[1] . "' doesn't exist";
+        }
+        if (str_contains(strtolower($message), 'duplicate entry')) return 'Duplicate entry for a unique key.';
+        return 'PDO error message suppressed for safety.';
     }
 
     private function uuid(): string
