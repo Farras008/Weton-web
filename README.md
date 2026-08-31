@@ -5,7 +5,7 @@
 Kalkulator Weton serta data Primbon tetap berbasis file PHP; MySQL dipakai untuk transaksi DOKU Checkout.
 
 1. Buat database MySQL kosong di hosting, lalu impor [database/schema.sql](database/schema.sql).
-   Jika Anda sudah mengimpor schema versi sebelumnya, jalankan sekali [database/migrations/002_replace_louvin_with_doku_checkout.sql](database/migrations/002_replace_louvin_with_doku_checkout.sql), bukan schema penuh lagi.
+   Untuk instalasi lama yang sudah memakai schema DOKU, jalankan sekali [database/migrations/003_repair_payments_doku_columns.sql](database/migrations/003_repair_payments_doku_columns.sql). Migration ini kondisional dan memperbaiki kolom DOKU yang mungkin belum ada, termasuk `reference`; jangan mengimpor schema penuh ke database yang sudah berisi transaksi. Untuk instalasi lama yang masih memakai Duitku dan belum pernah dipindahkan ke DOKU, jalankan [database/migrations/002_replace_louvin_with_doku_checkout.sql](database/migrations/002_replace_louvin_with_doku_checkout.sql) terlebih dahulu, lalu jalankan migration 003.
 2. Satu-satunya konfigurasi aplikasi adalah environment variables yang dibaca oleh [config/config.php](config/config.php). Untuk local, salin `.env.example` menjadi `.env` lalu isi nilainya; loader kecil di `config/config.php` hanya mengisi environment variable yang belum ada. Untuk deployment, gunakan key yang sama pada panel hosting atau `.env` yang diunggah terpisah dari source code. File `.env` tidak di-commit.
 3. DOKU Checkout memakai `https://api-sandbox.doku.com` otomatis saat `DOKU_ENV=sandbox`. Pastikan `APP_URL` adalah URL HTTPS publik yang tepat. Setelah deployment, set QRIS Notify URL di DOKU ke `https://domain-anda/api/doku/notification`.
 

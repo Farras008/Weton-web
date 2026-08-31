@@ -18,12 +18,23 @@ try {
     $payment = PaymentService::create($email, $birthDate, $birthTime);
     $response = (new DokuCheckoutService())->createPayment($payment);
     $dokuPayment = $response['payment'];
-    PaymentService::markInvoiceCreated($payment['merchant_order_id'], [
-        'reference' => (string) ($response['uuid'] ?? $dokuPayment['token_id'] ?? $payment['merchant_order_id']),
-        'statusMessage' => 'DOKU Checkout dibuat',
-    ]);
+    $invoiceMetadataSaved = true;
+    try {
+        PaymentService::markInvoiceCreated($payment['merchant_order_id'], [
+            'reference' => (string) ($response['uuid'] ?? $dokuPayment['token_id'] ?? $payment['merchant_order_id']),
+            'statusMessage' => 'DOKU Checkout dibuat',
+        ]);
+    } catch (PaymentDatabaseException $e) {
+        // DOKU has already issued a usable Checkout URL. Do not hide it because
+        // optional invoice metadata could not be persisted on an old schema.
+        $invoiceMetadataSaved = false;
+        error_log('DOKU invoice metadata update failed: invoice=' . $payment['merchant_order_id']);
+        DokuCheckoutService::recordApplicationFailure($payment['merchant_order_id'], (int) $payment['amount'], $e);
+    }
     $_SESSION['doku_orders'][$payment['merchant_order_id']] = true;
-    DokuCheckoutService::recordFrontendResponse($payment['merchant_order_id'], (int) $payment['amount']);
+    if ($invoiceMetadataSaved) {
+        DokuCheckoutService::recordFrontendResponse($payment['merchant_order_id'], (int) $payment['amount']);
+    }
     echo json_encode(['success' => true, 'invoice' => $payment['merchant_order_id'], 'paymentUrl' => $dokuPayment['url']]);
 } catch (Throwable $e) {
     $invoiceForLog = is_array($payment) ? (string) ($payment['merchant_order_id'] ?? '-') : '-';
