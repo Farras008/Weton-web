@@ -1,0 +1,5 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/wetononl/public_html/
+    - /usr/bin/git archive HEAD | /usr/bin/tar -x -C $DEPLOYPATH
