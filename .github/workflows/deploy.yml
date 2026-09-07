@@ -1,0 +1,22 @@
+name: Deploy Weton to Oriper
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to Oriper
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.ORIPER_HOST }}
+          username: ${{ secrets.ORIPER_USER }}
+          key: ${{ secrets.ORIPER_SSH_KEY }}
+          script: |
+            cd /home/wetononl/weton-web
+            git pull origin main
+            /usr/bin/git archive HEAD | /bin/tar -x -C /home/wetononl/public_html
